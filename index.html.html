@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinHogar">
+<meta name="description" content="App de finanzas del hogar - Sincronizada entre dispositivos">
+<title>FinHogar - Finanzas del Hogar</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --card2: #334155;
+  --accent: #10b981;
+  --accent2: #3b82f6;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --border: #334155;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { height:100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  padding-bottom: 80px;
+}
+.hidden { display:none !important; }
+.page { display:none; animation: fadeIn 0.3s ease; padding: 16px; max-width: 480px; margin: 0 auto; }
+.page.active { display:block; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+.header {
+  background: linear-gradient(135deg, var(--card) 0%, var(--bg) 100%);
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+.header h1 { font-size: 1.3rem; font-weight: 700; }
+.header p { font-size: 0.85rem; color: var(--text2); margin-top: 4px; }
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+}
+.card-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text2);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.amount { font-size: 1.8rem; font-weight: 700; }
+.amount.positive { color: var(--accent); }
+.amount.negative { color: var(--danger); }
+.amount.neutral { color: var(--warning); }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-mini {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid var(--border);
+}
+.stat-mini .label { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; }
+.stat-mini .value { font-size: 1.2rem; font-weight: 700; margin-top: 4px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-small {
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  width: auto;
+  border-radius: 8px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus { border-color: var(--accent); }
+label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 6px; margin-top: 4px; }
+
+.list-item {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+.list-item:active { background: var(--card2); }
+.list-item .info { flex: 1; }
+.list-item .name { font-weight: 600; font-size: 0.95rem; }
+.list-item .meta { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+.list-item .right { text-align: right; }
+.list-item .price { font-weight: 700; font-size: 1.1rem; }
+.list-item .date { font-size: 0.7rem; color: var(--text2); }
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.badge-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+.badge-paid { background: rgba(16,185,129,0.15); color: var(--accent); }
+.badge-overdue { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15,23,42,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 20px;
+  z-index: 1000;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  color: var(--text2);
+  font-size: 0.65rem;
+  text-decoration: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.nav-item.active { color: var(--accent); }
+.nav-item svg { width: 24px; height: 24px; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal-content {
+  background: var(--card);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+.modal-overlay.show .modal-content { transform: translateY(0); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-header h2 { font-size: 1.2rem; }
+.close-btn { background: none; border: none; color: var(--text2); font-size: 1.5rem; cursor: pointer; }
+
+.ai-card {
+  background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(59,130,246,0.1) 100%);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.ai-card .ai-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.ai-card .ai-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+}
+.ai-card .ai-title { font-weight: 700; font-size: 0.95rem; }
+.ai-card .ai-text { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+
+.chart-container {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.chart-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  margin-top: 10px;
+}
+.chart-bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.chart-bar-fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  min-height: 4px;
+  transition: height 0.5s ease;
+}
+.chart-bar-label {
+  font-size: 0.65rem;
+  color: var(--text2);
+  text-align: center;
+}
+
+.pie-chart {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+}
+.pie-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  justify-content: center;
+}
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+.pie-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.sync-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s;
+}
+.sync-online { background: rgba(16,185,129,0.2); color: var(--accent); }
+.sync-offline { background: rgba(245,158,11,0.2); color: var(--warning); }
+.sync-syncing { background: rgba(59,130,246,0.2); color: var(--accent2); }
+
+.install-prompt {
+  position: fixed;
+  bottom: 90px;
+  left: 16px;
+  right: 16px;
+  background: var(--accent);
+  color: #000;
+  padding: 14px 18px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1500;
+  animation: slideUp 0.4s ease;
+}
+@keyframes slideUp { from { transform: translateY(100px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.toggle-switch {
+  width: 50px;
+  height: 28px;
+  background: var(--card2);
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.toggle-switch.on { background: var(--accent); }
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 22px; height: 22px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.3s;
+}
+.toggle-switch.on::after { transform: translateX(22px); }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text2);
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 2px; }
+
+@media (min-width: 768px) {
+  body { display: flex; justify-content: center; }
+  .page { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div id="syncStatus" class="sync-status sync-offline hidden">
+  <span id="syncDot">●</span>
+  <span id="syncText">Sin conexión</span>
+</div>
+
+<div id="installPrompt" class="install-prompt hidden">
+  <span>📲 Añade FinHogar a tu pantalla de inicio</span>
+  <button class="btn btn-small" style="background:#000;color:#fff;width:auto;" onclick="installApp()">Instalar</button>
+</div>
+
+<!-- LOGIN -->
+<div id="pageLogin" class="page active" style="padding-top: 60px;">
+  <div style="text-align:center; margin-bottom: 40px;">
+    <div style="width:90px;height:90px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:24px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🏠</div>
+    <h1 style="font-size:1.8rem;margin-bottom:8px;">FinHogar</h1>
+    <p style="color:var(--text2);font-size:0.95rem;">Finanzas compartidas para tu hogar</p>
+  </div>
+  <div class="card">
+    <label>🔑 Código de acceso compartido</label>
+    <input type="text" id="roomCode" placeholder="Ej: CASA2026" maxlength="20" style="text-align:center;font-size:1.2rem;letter-spacing:2px;text-transform:uppercase;">
+    <p style="font-size:0.8rem;color:var(--text2);margin-bottom:16px;text-align:center;">Ambos teléfonos deben usar el mismo código para sincronizar</p>
+    <button class="btn btn-primary" onclick="joinRoom()">Entrar / Crear</button>
+  </div>
+  <div class="card" style="margin-top:20px;">
+    <p style="font-size:0.85rem;color:var(--text2);line-height:1.6;text-align:center;">
+      💡 <strong>¿Cómo funciona?</strong><br><br>
+      1. Crea un código único para tu hogar<br>
+      2. Compártelo con tu pareja<br>
+      3. Ambos ven los mismos datos en tiempo real<br>
+      4. Funciona offline y sincroniza automáticamente
+    </p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="pageDashboard" class="page">
+  <div class="header">
+    <h1>📊 Resumen</h1>
+    <p id="roomDisplay">Código: --</p>
+  </div>
+  <div class="ai-card" id="aiCard">
+    <div class="ai-header">
+      <div class="ai-icon">🤖</div>
+      <div class="ai-title">Asesor Financiero IA</div>
+    </div>
+    <div class="ai-text" id="aiText">Analizando tus finanzas...</div>
+  </div>
+  <div class="card">
+    <div class="card-title">💰 Dinero Disponible</div>
+    <div class="amount positive" id="balanceAmount">$0.00</div>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <div style="flex:1;">
+        <div style="font-size:0.7rem;color:var(--text2);">Ingresos</div>
+        <div style="font-weight:700;color:var(--accent);" id="totalIncome">$0.00</div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:0.7rem;color:var(--text2);">Deudas Pend.</div>
+        <div style="font-weight:700;color:var(--danger);" id="totalDebts">$0.00</div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:0.7rem;color:var(--text2);">Pagado</div>
+        <div style="font-weight:700;color:var(--accent2);" id="totalPaid">$0.00</div>
+      </div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-mini">
+      <div class="label">Deudas Activas</div>
+      <div class="value" id="activeDebtsCount" style="color:var(--warning);">0</div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Próximo Pago</div>
+      <div class="value" style="font-size:0.9rem;color:var(--text2);" id="nextPayment">--</div>
+    </div>
+  </div>
+  <div class="chart-container">
+    <div class="card-title">📈 Distribución de Gastos</div>
+    <div class="pie-chart" id="pieChart" style="background:conic-gradient(var(--accent) 0% 0%, var(--card2) 0% 100%);"></div>
+    <div class="pie-legend" id="pieLegend"></div>
+  </div>
+  <div class="chart-container">
+    <div class="card-title">📊 Pagos por Mes</div>
+    <div class="chart-bar" id="barChart"></div>
+  </div>
+  <div class="card-title" style="margin-top:8px;">🕐 Actividad Reciente</div>
+  <div id="recentActivity"></div>
+</div>
+
+<!-- INGRESOS -->
+<div id="pageIncome" class="page">
+  <div class="header">
+    <h1>💵 Ingresos</h1>
+    <p>Gestiona los ingresos del hogar</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('income')">+ Añadir Ingreso</button>
+  <div class="card">
+    <div class="card-title">Total Ingresos</div>
+    <div class="amount positive" id="incomeTotal">$0.00</div>
+  </div>
+  <div id="incomeList"></div>
+</div>
+
+<!-- DEUDAS -->
+<div id="pageDebts" class="page">
+  <div class="header">
+    <h1>💳 Deudas</h1>
+    <p>Gestiona lo que debes pagar</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('debt')">+ Añadir Deuda</button>
+  <div class="stats-row">
+    <div class="stat-mini">
+      <div class="label">Total Adeudado</div>
+      <div class="value negative" id="debtsTotal">$0.00</div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Vencidas</div>
+      <div class="value" id="overdueCount" style="color:var(--danger);">0</div>
+    </div>
+  </div>
+  <div id="debtList"></div>
+</div>
+
+<!-- PAGOS -->
+<div id="pagePayments" class="page">
+  <div class="header">
+    <h1>✅ Pagos Realizados</h1>
+    <p>Historial de pagos</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Total Pagado</div>
+    <div class="amount positive" id="paymentsTotal">$0.00</div>
+  </div>
+  <div id="paymentList"></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="pageSettings" class="page">
+  <div class="header">
+    <h1>⚙️ Configuración</h1>
+    <p>Personaliza tu experiencia</p>
+  </div>
+  <div class="card">
+    <div class="card-title">👤 Perfil</div>
+    <label>Tu nombre</label>
+    <input type="text" id="userName" placeholder="Tu nombre" onchange="saveSettings()">
+    <label>Nombre de tu pareja</label>
+    <input type="text" id="partnerName" placeholder="Nombre de tu pareja" onchange="saveSettings()">
+  </div>
+  <div class="card">
+    <div class="card-title">🔔 Notificaciones</div>
+    <div class="toggle-row">
+      <span>Alertas de vencimiento</span>
+      <div class="toggle-switch on" id="toggleAlerts" onclick="toggleSetting(this,'alerts')"></div>
+    </div>
+    <div class="toggle-row">
+      <span>Sincronización automática</span>
+      <div class="toggle-switch on" id="toggleSync" onclick="toggleSetting(this,'sync')"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">☁️ Sincronización</div>
+    <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;">
+      Código actual: <strong id="settingsRoomCode" style="color:var(--accent);">--</strong>
+    </p>
+    <button class="btn btn-secondary" onclick="exportData()">📥 Exportar Datos</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 Importar Datos</button>
+    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(this)">
+    <button class="btn btn-danger" onclick="logout()">🚪 Cerrar Sesión</button>
+  </div>
+  <div class="card" style="margin-top:20px;">
+    <p style="font-size:0.8rem;color:var(--text2);text-align:center;">
+      FinHogar v2.0<br>Datos almacenados localmente y sincronizados vía Firebase
+    </p>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modalTitle">Añadir</h2>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav" style="display:none;">
+  <button class="nav-item active" onclick="navigate('Dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Inicio</span>
+  </button>
+  <button class="nav-item" onclick="navigate('Income')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    <span>Ingresos</span>
+  </button>
+  <button class="nav-item" onclick="navigate('Debts')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    <span>Deudas</span>
+  </button>
+  <button class="nav-item" onclick="navigate('Payments')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>Pagos</span>
+  </button>
+  <button class="nav-item" onclick="navigate('Settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.67 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.67a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Ajustes</span>
+  </button>
+</nav>
+
+<!-- Firebase compat (funciona con archivos locales) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+// ============================================
+// CONFIGURACIÓN FIREBASE REAL DE TU PROYECTO
+// ============================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAZHjhds-OFmhQ8D7t4D1MQbkD43UtaGEU",
+  authDomain: "finhogar-4379b.firebaseapp.com",
+  databaseURL: "https://finhogar-4379b-default-rtdb.firebaseio.com",
+  projectId: "finhogar-4379b",
+  storageBucket: "finhogar-4379b.firebasestorage.app",
+  messagingSenderId: "1057697512148",
+  appId: "1:1057697512148:web:c12f7de9ae9d40242ed941"
+};
+
+let app, db, roomRef, unsubscribe = null;
+let isOnline = false;
+
+// ========== DATA STORE ==========
+let data = {
+  incomes: [],
+  debts: [],
+  payments: [],
+  settings: { userName: '', partnerName: '', alerts: true, sync: true },
+  roomCode: ''
+};
+
+// ========== INIT ==========
+function init() {
+  const saved = localStorage.getItem('finhogar_data');
+  const savedRoom = localStorage.getItem('finhogar_room');
+  if (saved) {
+    try { data = JSON.parse(saved); } catch(e){}
+  }
+  if (savedRoom) {
+    data.roomCode = savedRoom;
+    showApp();
+    initFirebase();
+  }
+  updateUI();
+}
+
+function joinRoom() {
+  const code = document.getElementById('roomCode').value.trim().toUpperCase();
+  if (!code) { alert('Introduce un código'); return; }
+  data.roomCode = code;
+  localStorage.setItem('finhogar_room', code);
+  showApp();
+  initFirebase();
+}
+
+function showApp() {
+  document.getElementById('pageLogin').classList.remove('active');
+  document.getElementById('pageDashboard').classList.add('active');
+  document.getElementById('bottomNav').style.display = 'flex';
+  document.getElementById('roomDisplay').textContent = 'Código: ' + data.roomCode;
+  document.getElementById('settingsRoomCode').textContent = data.roomCode;
+  document.getElementById('userName').value = data.settings.userName || '';
+  document.getElementById('partnerName').value = data.settings.partnerName || '';
+}
+
+function initFirebase() {
+  try {
+    app = firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    const code = data.roomCode.replace(/[^a-zA-Z0-9]/g, '');
+    roomRef = db.ref('rooms/' + code);
+
+    roomRef.on('value', (snapshot) => {
+      isOnline = true;
+      updateSyncStatus('online');
+      if (snapshot.exists()) {
+        const remote = snapshot.val();
+        if (remote.incomes) data.incomes = remote.incomes;
+        if (remote.debts) data.debts = remote.debts;
+        if (remote.payments) data.payments = remote.payments;
+        if (remote.settings) data.settings = { ...data.settings, ...remote.settings };
+        saveLocal();
+        updateUI();
+      } else {
+        syncToCloud();
+      }
+    }, (err) => {
+      console.log('Firebase error:', err.message);
+      isOnline = false;
+      updateSyncStatus('offline');
+    });
+
+    db.ref('.info/connected').on('value', (snap) => {
+      if (snap.val() === true) {
+        isOnline = true;
+        updateSyncStatus('online');
+      } else {
+        isOnline = false;
+        updateSyncStatus('offline');
+      }
+    });
+
+  } catch(e) {
+    console.log('Firebase init failed:', e);
+    isOnline = false;
+    updateSyncStatus('offline');
+  }
+}
+
+function syncToCloud() {
+  if (!roomRef || !isOnline) return;
+  updateSyncStatus('syncing');
+  roomRef.set({
+    incomes: data.incomes,
+    debts: data.debts,
+    payments: data.payments,
+    settings: data.settings,
+    lastUpdate: Date.now()
+  }).then(() => {
+    updateSyncStatus('online');
+  }).catch(() => {
+    updateSyncStatus('offline');
+  });
+}
+
+function updateSyncStatus(status) {
+  const el = document.getElementById('syncStatus');
+  const dot = document.getElementById('syncDot');
+  const text = document.getElementById('syncText');
+  el.classList.remove('hidden', 'sync-online', 'sync-offline', 'sync-syncing');
+  el.classList.add('sync-' + status);
+  if (status === 'online') { text.textContent = 'Sincronizado'; dot.textContent = '●'; }
+  else if (status === 'offline') { text.textContent = 'Modo offline'; dot.textContent = '○'; }
+  else { text.textContent = 'Sincronizando...'; dot.textContent = '◐'; }
+  setTimeout(() => { if (status === 'online') el.classList.add('hidden'); }, 3000);
+}
+
+function saveLocal() {
+  localStorage.setItem('finhogar_data', JSON.stringify(data));
+}
+
+// ========== NAVIGATION ==========
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  window.scrollTo(0, 0);
+  updateUI();
+}
+
+// ========== INCOME ==========
+function addIncome() {
+  const name = document.getElementById('incName').value.trim();
+  const amount = parseFloat(document.getElementById('incAmount').value);
+  const date = document.getElementById('incDate').value;
+  const type = document.getElementById('incType').value;
+  if (!name || !amount || !date) { alert('Completa todos los campos'); return; }
+
+  data.incomes.push({
+    id: Date.now().toString(),
+    name, amount, date, type,
+    createdAt: Date.now()
+  });
+  saveLocal();
+  syncToCloud();
+  closeModal();
+  updateUI();
+}
+
+function deleteIncome(id) {
+  if (!confirm('¿Eliminar este ingreso?')) return;
+  data.incomes = data.incomes.filter(i => i.id !== id);
+  saveLocal();
+  syncToCloud();
+  updateUI();
+}
+
+// ========== DEBTS ==========
+function addDebt() {
+  const name = document.getElementById('debtName').value.trim();
+  const amount = parseFloat(document.getElementById('debtAmount').value);
+  const dueDate = document.getElementById('debtDueDate').value;
+  const limitDate = document.getElementById('debtLimitDate').value;
+  const category = document.getElementById('debtCategory').value;
+  const splitMonths = parseInt(document.getElementById('debtSplit').value) || 1;
+
+  if (!name || !amount || !dueDate || !limitDate) { alert('Completa todos los campos'); return; }
+
+  const debt = {
+    id: Date.now().toString(),
+    name, amount, dueDate, limitDate, category, splitMonths,
+    paid: 0,
+    createdAt: Date.now()
+  };
+
+  if (splitMonths > 1) {
+    debt.monthlyPayment = amount / splitMonths;
+    debt.paidMonths = 0;
+  }
+
+  data.debts.push(debt);
+  saveLocal();
+  syncToCloud();
+  closeModal();
+  updateUI();
+}
+
+function payDebt(id) {
+  const debt = data.debts.find(d => d.id === id);
+  if (!debt) return;
+
+  let payAmount = debt.amount - debt.paid;
+  if (debt.splitMonths > 1) {
+    payAmount = debt.monthlyPayment;
+  }
+
+  const custom = prompt('Monto a pagar (debe: $' + payAmount.toFixed(2) + '):', payAmount.toFixed(2));
+  if (custom === null) return;
+  payAmount = parseFloat(custom) || payAmount;
+
+  debt.paid = (debt.paid || 0) + payAmount;
+  if (debt.splitMonths > 1) {
+    debt.paidMonths = Math.floor(debt.paid / debt.monthlyPayment);
+  }
+
+  data.payments.push({
+    id: Date.now().toString(),
+    debtId: id,
+    debtName: debt.name,
+    amount: payAmount,
+    date: new Date().toISOString().split('T')[0],
+    createdAt: Date.now()
+  });
+
+  if (debt.paid >= debt.amount) {
+    debt.fullyPaid = true;
+  }
+
+  saveLocal();
+  syncToCloud();
+  updateUI();
+}
+
+function deleteDebt(id) {
+  if (!confirm('¿Eliminar esta deuda?')) return;
+  data.debts = data.debts.filter(d => d.id !== id);
+  saveLocal();
+  syncToCloud();
+  updateUI();
+}
+
+// ========== SETTINGS ==========
+function saveSettings() {
+  data.settings.userName = document.getElementById('userName').value;
+  data.settings.partnerName = document.getElementById('partnerName').value;
+  saveLocal();
+  syncToCloud();
+}
+
+function toggleSetting(el, key) {
+  el.classList.toggle('on');
+  data.settings[key] = el.classList.contains('on');
+  saveLocal();
+  syncToCloud();
+}
+
+function logout() {
+  if (!confirm('¿Cerrar sesión? Los datos se mantendran localmente.')) return;
+  if (roomRef) roomRef.off();
+  localStorage.removeItem('finhogar_room');
+  location.reload();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'finhogar_backup_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (confirm('¿Reemplazar todos los datos con el archivo importado?')) {
+        data = imported;
+        saveLocal();
+        syncToCloud();
+        updateUI();
+        alert('Datos importados correctamente');
+      }
+    } catch(err) {
+      alert('Archivo inválido');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ========== MODAL ==========
+function openModal(type) {
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  overlay.classList.add('show');
+
+  const today = new Date().toISOString().split('T')[0];
+
+  if (type === 'income') {
+    title.textContent = 'Añadir Ingreso';
+    body.innerHTML = `
+      <label>Concepto</label>
+      <input type="text" id="incName" placeholder="Ej: Salario, Freelance...">
+      <label>Monto ($)</label>
+      <input type="number" id="incAmount" placeholder="0.00" step="0.01">
+      <label>Fecha</label>
+      <input type="date" id="incDate" value="${today}">
+      <label>Tipo</label>
+      <select id="incType">
+        <option value="salary">Salario</option>
+        <option value="freelance">Freelance</option>
+        <option value="investment">Inversión</option>
+        <option value="other">Otro</option>
+      </select>
+      <button class="btn btn-primary" onclick="addIncome()">Guardar Ingreso</button>
+    `;
+  } else if (type === 'debt') {
+    title.textContent = 'Añadir Deuda';
+    body.innerHTML = `
+      <label>¿Qué debes pagar?</label>
+      <input type="text" id="debtName" placeholder="Ej: Renta, Luz, Tarjeta...">
+      <label>Monto total ($)</label>
+      <input type="number" id="debtAmount" placeholder="0.00" step="0.01">
+      <label>Fecha de pago</label>
+      <input type="date" id="debtDueDate" value="${today}">
+      <label>Fecha límite de pago</label>
+      <input type="date" id="debtLimitDate" value="${today}">
+      <label>Categoría</label>
+      <select id="debtCategory">
+        <option value="home">Hogar</option>
+        <option value="services">Servicios</option>
+        <option value="credit">Tarjeta de Crédito</option>
+        <option value="loan">Préstamo</option>
+        <option value="medical">Médico</option>
+        <option value="other">Otro</option>
+      </select>
+      <label>¿Dividir en meses? (1 = pago único)</label>
+      <input type="number" id="debtSplit" value="1" min="1" max="60">
+      <button class="btn btn-primary" onclick="addDebt()">Guardar Deuda</button>
+    `;
+  }
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+// ========== UI UPDATES ==========
+function updateUI() {
+  updateDashboard();
+  updateIncomePage();
+  updateDebtsPage();
+  updatePaymentsPage();
+  generateAIAdvice();
+}
+
+function formatMoney(n) {
+  return '$' + (n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function updateDashboard() {
+  const totalIncome = data.incomes.reduce((s, i) => s + i.amount, 0);
+  const totalDebts = data.debts.filter(d => !d.fullyPaid).reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
+  const totalPaid = data.payments.reduce((s, p) => s + p.amount, 0);
+  const balance = totalIncome - totalDebts;
+
+  document.getElementById('balanceAmount').textContent = formatMoney(balance);
+  document.getElementById('totalIncome').textContent = formatMoney(totalIncome);
+  document.getElementById('totalDebts').textContent = formatMoney(totalDebts);
+  document.getElementById('totalPaid').textContent = formatMoney(totalPaid);
+
+  const activeDebts = data.debts.filter(d => !d.fullyPaid);
+  document.getElementById('activeDebtsCount').textContent = activeDebts.length;
+
+  const upcoming = activeDebts
+    .filter(d => new Date(d.dueDate) >= new Date())
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
+  document.getElementById('nextPayment').textContent = upcoming
+    ? upcoming.name + ' - ' + new Date(upcoming.dueDate).toLocaleDateString("es-MX", { day:"numeric", month:"short" })
+    : 'Sin pagos pendientes';
+
+  // Pie chart
+  const categories = {};
+  data.debts.forEach(d => {
+    const cat = d.category || 'other';
+    categories[cat] = (categories[cat] || 0) + d.amount;
+  });
+  const catColors = { home: '#10b981', services: '#3b82f6', credit: '#ef4444', loan: '#f59e0b', medical: '#8b5cf6', other: '#64748b' };
+  const catLabels = { home: 'Hogar', services: 'Servicios', credit: 'Crédito', loan: 'Préstamo', medical: 'Médico', other: 'Otro' };
+  const totalCat = Object.values(categories).reduce((a, b) => a + b, 0);
+  let pieCss = '';
+  let pieLegend = '';
+  let currentPct = 0;
+  Object.entries(categories).forEach(([cat, val]) => {
+    const pct = (val / totalCat) * 100;
+    pieCss += catColors[cat] + ' ' + currentPct + '% ' + (currentPct + pct) + '%, ';
+    currentPct += pct;
+    pieLegend += '<div class="pie-legend-item"><div class="pie-legend-dot" style="background:' + catColors[cat] + '"></div>' + (catLabels[cat] || cat) + ' ' + pct.toFixed(0) + '%</div>';
+  });
+  document.getElementById('pieChart').style.background = totalCat > 0
+    ? 'conic-gradient(' + pieCss.slice(0, -2) + ')'
+    : 'conic-gradient(var(--card2) 0% 100%)';
+  document.getElementById('pieLegend').innerHTML = pieLegend || '<div class="pie-legend-item">Sin datos</div>';
+
+  // Bar chart
+  const monthly = {};
+  data.payments.forEach(p => {
+    const month = p.date.substring(0, 7);
+    monthly[month] = (monthly[month] || 0) + p.amount;
+  });
+  const months = Object.keys(monthly).sort().slice(-6);
+  const maxVal = Math.max(...Object.values(monthly), 1);
+  let barHtml = '';
+  months.forEach(m => {
+    const h = (monthly[m] / maxVal) * 100;
+    const label = new Date(m + '-01').toLocaleDateString("es-MX", { month: "short" });
+    barHtml += '<div class="chart-bar-item"><div class="chart-bar-fill" style="height:' + h + '%;background:var(--accent)"></div><div class="chart-bar-label">' + label + '</div></div>';
+  });
+  document.getElementById('barChart').innerHTML = barHtml || '<div style="color:var(--text2);font-size:0.8rem;">Sin pagos registrados</div>';
+
+  // Recent activity
+  const allActivity = [
+    ...data.incomes.map(i => ({ ...i, type: 'income' })),
+    ...data.payments.map(p => ({ ...p, type: 'payment' })),
+    ...data.debts.filter(d => d.fullyPaid).map(d => ({ ...d, type: 'debt_paid', date: d.limitDate }))
+  ].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
+
+  let activityHtml = '';
+  if (allActivity.length === 0) {
+    activityHtml = '<div class="empty-state"><p>No hay actividad reciente</p></div>';
+  } else {
+    allActivity.forEach(item => {
+      let icon, text, color;
+      if (item.type === 'income') { icon = '💵'; text = 'Ingreso: ' + item.name; color = 'var(--accent)'; }
+      else if (item.type === 'payment') { icon = '✅'; text = 'Pagado: ' + item.debtName; color = 'var(--accent2)'; }
+      else { icon = '🎉'; text = 'Deuda saldada: ' + item.name; color = 'var(--accent)'; }
+      activityHtml += '<div class="list-item" style="padding:10px 14px;"><div class="info"><div class="name" style="font-size:0.85rem;">' + icon + ' ' + text + '</div><div class="meta">' + new Date(item.date).toLocaleDateString("es-MX") + '</div></div><div class="right"><div class="price" style="font-size:0.95rem;color:' + color + ';">' + formatMoney(item.amount) + '</div></div></div>';
+    });
+  }
+  document.getElementById('recentActivity').innerHTML = activityHtml;
+}
+
+function updateIncomePage() {
+  const total = data.incomes.reduce((s, i) => s + i.amount, 0);
+  document.getElementById('incomeTotal').textContent = formatMoney(total);
+
+  let html = '';
+  if (data.incomes.length === 0) {
+    html = '<div class="empty-state"><p>No hay ingresos registrados</p></div>';
+  } else {
+    data.incomes.sort((a, b) => new Date(b.date) - new Date(a.date));
+    data.incomes.forEach(inc => {
+      html += '<div class="list-item"><div class="info"><div class="name">' + inc.name + '</div><div class="meta">' + new Date(inc.date).toLocaleDateString("es-MX") + ' · ' + inc.type + '</div></div><div class="right"><div class="price" style="color:var(--accent);">' + formatMoney(inc.amount) + '</div><button class="btn btn-small btn-danger" style="margin-top:6px;" onclick="deleteIncome(\' + inc.id + \')">Eliminar</button></div></div>';
+    });
+  }
+  document.getElementById('incomeList').innerHTML = html;
+}
+
+function updateDebtsPage() {
+  const active = data.debts.filter(d => !d.fullyPaid);
+  const total = active.reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
+  const overdue = active.filter(d => new Date(d.limitDate) < new Date() && (d.paid || 0) < d.amount).length;
+
+  document.getElementById('debtsTotal').textContent = formatMoney(total);
+  document.getElementById('overdueCount').textContent = overdue;
+
+  let html = '';
+  if (active.length === 0) {
+    html = '<div class="empty-state"><p>🎉 ¡No tienes deudas pendientes!</p></div>';
+  } else {
+    active.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    active.forEach(debt => {
+      const remaining = debt.amount - (debt.paid || 0);
+      const isOverdue = new Date(debt.limitDate) < new Date();
+      const pct = ((debt.paid || 0) / debt.amount) * 100;
+      const badgeClass = isOverdue ? 'badge-overdue' : 'badge-pending';
+      const badgeText = isOverdue ? 'VENCIDA' : 'PENDIENTE';
+
+      html += '<div class="list-item" style="flex-direction:column;align-items:stretch;gap:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="info"><div class="name">' + debt.name + '</div><div class="meta">Pago: ' + new Date(debt.dueDate).toLocaleDateString("es-MX") + ' · Límite: ' + new Date(debt.limitDate).toLocaleDateString("es-MX") + '</div><span class="badge ' + badgeClass + '">' + badgeText + '</span></div><div class="right"><div class="price" style="color:var(--danger);">' + formatMoney(remaining) + '</div><div class="date">de ' + formatMoney(debt.amount) + '</div></div></div>' + (debt.splitMonths > 1 ? '<div style="font-size:0.75rem;color:var(--text2);">Mensual: ' + formatMoney(debt.monthlyPayment) + ' · Pagados: ' + (debt.paidMonths || 0) + '/' + debt.splitMonths + '</div>' : '') + '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-small" style="flex:1;" onclick="payDebt(\' + debt.id + \')">💳 Pagar</button><button class="btn btn-secondary btn-small" style="width:auto;" onclick="deleteDebt(\' + debt.id + \')">🗑️</button></div></div>';
+    });
+  }
+  document.getElementById('debtList').innerHTML = html;
+}
+
+function updatePaymentsPage() {
+  const total = data.payments.reduce((s, p) => s + p.amount, 0);
+  document.getElementById('paymentsTotal').textContent = formatMoney(total);
+
+  let html = '';
+  if (data.payments.length === 0) {
+    html = '<div class="empty-state"><p>No hay pagos registrados</p></div>';
+  } else {
+    data.payments.sort((a, b) => new Date(b.date) - new Date(a.date));
+    data.payments.forEach(pay => {
+      html += '<div class="list-item"><div class="info"><div class="name">' + pay.debtName + '</div><div class="meta">' + new Date(pay.date).toLocaleDateString("es-MX") + '</div></div><div class="right"><div class="price" style="color:var(--accent2);">' + formatMoney(pay.amount) + '</div></div></div>';
+    });
+  }
+  document.getElementById('paymentList').innerHTML = html;
+}
+
+// ========== AI ADVISOR ==========
+function generateAIAdvice() {
+  const totalIncome = data.incomes.reduce((s, i) => s + i.amount, 0);
+  const activeDebts = data.debts.filter(d => !d.fullyPaid);
+  const totalDebts = activeDebts.reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
+  const totalPaid = data.payments.reduce((s, p) => s + p.amount, 0);
+  const balance = totalIncome - totalDebts;
+  const overdue = activeDebts.filter(d => new Date(d.limitDate) < new Date()).length;
+
+  let advice = '';
+
+  if (data.incomes.length === 0 && data.debts.length === 0) {
+    advice = '👋 ¡Bienvenido a FinHogar! Comienza registrando tus ingresos y deudas para obtener consejos personalizados.';
+  } else if (totalIncome === 0) {
+    advice = '⚠️ No tienes ingresos registrados. Registra tus ingresos para poder calcular tu capacidad de pago.';
+  } else if (overdue > 0) {
+    advice = '🚨 ¡Atención! Tienes ' + overdue + ' deuda(s) vencida(s). Prioriza estos pagos para evitar cargos adicionales.';
+  } else if (balance < 0) {
+    const deficit = Math.abs(balance);
+    const pct = ((totalDebts / totalIncome) * 100).toFixed(0);
+    advice = '📉 Tus deudas representan el ' + pct + '% de tus ingresos. Tienes un déficit de ' + formatMoney(deficit) + '. Considera reducir gastos o buscar ingresos adicionales.';
+  } else if (balance > 0 && totalDebts > 0) {
+    const pct = ((totalDebts / totalIncome) * 100).toFixed(0);
+    advice = '✅ Buen trabajo. Tienes ' + formatMoney(balance) + ' disponible. Tus deudas representan el ' + pct + '% de tus ingresos. Intenta mantener este ratio bajo el 30%.';
+  } else if (totalDebts === 0 && totalIncome > 0) {
+    advice = '🎉 ¡Excelente! No tienes deudas pendientes. Considera ahorrar al menos el 20% de tus ingresos.';
+  } else {
+    advice = '💡 Sigue registrando tus movimientos. Una buena regla es que tus deudas no superen el 30% de tus ingresos mensuales.';
+  }
+
+  if (data.settings.partnerName) {
+    advice += ' Recuerda mantener la comunicación con ' + data.settings.partnerName + ' sobre los gastos del hogar.';
+  }
+
+  document.getElementById('aiText').textContent = advice;
+}
+
+// ========== PWA INSTALL ==========
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installPrompt').classList.remove('hidden');
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(({ outcome }) => {
+      if (outcome === 'accepted') {
+        document.getElementById('installPrompt').classList.add('hidden');
+      }
+    });
+  } else {
+    alert('En Chrome/Edge: Menú → "Añadir a pantalla de inicio"');
+  }
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  const swCode = "self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503}))));";
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// ========== START ==========
+init();
+</script>
+</body>
+</html>
