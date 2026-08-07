@@ -43,9 +43,6 @@ body {
   background: linear-gradient(135deg, var(--card) 0%, var(--bg) 100%);
   padding: 20px 16px;
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
   backdrop-filter: blur(10px);
 }
 .header h1 { font-size: 1.3rem; font-weight: 700; }
@@ -240,6 +237,10 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 150;
+  backdrop-filter: blur(10px);
 }
 .ai-card .ai-header {
   display: flex;
@@ -388,6 +389,84 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 2px; }
 
+/* ========== ROBOT DANCE ANIMATIONS ========== */
+@keyframes dance1 {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-15deg) scale(1.2); }
+  50% { transform: rotate(15deg) scale(1.2); }
+  75% { transform: rotate(-8deg) scale(1.1); }
+}
+@keyframes dance2 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  20% { transform: translateY(-15px) rotate(-20deg) scale(1.1); }
+  40% { transform: translateY(0) rotate(20deg) scale(1.1); }
+  60% { transform: translateY(-8px) rotate(-10deg) scale(1.05); }
+  80% { transform: translateY(-3px) rotate(10deg) scale(1.05); }
+}
+@keyframes dance3 {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  15% { transform: scale(1.3) rotate(-25deg); }
+  30% { transform: scale(0.8) rotate(25deg); }
+  45% { transform: scale(1.2) rotate(-15deg); }
+  60% { transform: scale(0.9) rotate(15deg); }
+  75% { transform: scale(1.1) rotate(-5deg); }
+  90% { transform: scale(1) rotate(5deg); }
+}
+@keyframes dance4 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  12% { transform: translateX(-15px) translateY(-10px) rotate(-15deg) scale(1.1); }
+  25% { transform: translateX(15px) translateY(-15px) rotate(15deg) scale(1.1); }
+  37% { transform: translateX(-8px) translateY(-8px) rotate(-8deg) scale(1.05); }
+  50% { transform: translateX(8px) translateY(-5px) rotate(8deg) scale(1.05); }
+  62% { transform: translateX(-4px) translateY(-3px) rotate(-4deg); }
+  75% { transform: translateX(4px) translateY(-2px) rotate(4deg); }
+  87% { transform: translateX(-2px) translateY(-1px) rotate(-2deg); }
+}
+@keyframes dance5 {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  10% { transform: rotate(-30deg) scale(1.2); }
+  20% { transform: rotate(30deg) scale(1.2); }
+  30% { transform: rotate(-20deg) scale(1.15); }
+  40% { transform: rotate(20deg) scale(1.15); }
+  50% { transform: rotate(-10deg) scale(1.1); }
+  60% { transform: rotate(10deg) scale(1.1); }
+  70% { transform: rotate(-5deg) scale(1.05); }
+  80% { transform: rotate(5deg) scale(1.05); }
+  90% { transform: rotate(-2deg) scale(1.02); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); border-color: rgba(16,185,129,0.3); }
+  25% { box-shadow: 0 0 30px 15px rgba(16,185,129,0.3); border-color: var(--accent); }
+  50% { box-shadow: 0 0 50px 25px rgba(16,185,129,0.2); border-color: rgba(59,130,246,0.5); }
+  75% { box-shadow: 0 0 30px 15px rgba(59,130,246,0.3); border-color: var(--accent2); }
+}
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.ai-icon.dancing {
+  animation: dance1 0.5s ease-in-out 4;
+}
+.ai-icon.dancing2 {
+  animation: dance2 0.4s ease-in-out 5;
+}
+.ai-icon.dancing3 {
+  animation: dance3 0.6s ease-in-out 4;
+}
+.ai-icon.dancing4 {
+  animation: dance4 0.5s ease-in-out 5;
+}
+.ai-icon.dancing5 {
+  animation: dance5 0.7s ease-in-out 4;
+}
+.ai-card.celebrating {
+  animation: pulse-glow 0.8s ease-in-out 4, bounce-in 0.5s ease;
+  border-color: var(--accent) !important;
+  background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.15) 100%) !important;
+}
+
 @media (min-width: 768px) {
   body { display: flex; justify-content: center; }
   .page { width: 100%; }
@@ -473,6 +552,13 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
       <div class="value" style="font-size:0.9rem;color:var(--text2);" id="nextPayment">--</div>
     </div>
   </div>
+  <div class="card">
+    <div class="card-title">💸 Gastos Diarios</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+      <input type="number" id="dailyExpenseAmount" placeholder="0.00" step="0.01" style="flex:1;margin-bottom:0;font-size:0.9rem;padding:10px;">
+      <button class="btn btn-danger btn-small" style="width:auto;padding:10px 16px;font-size:1.2rem;" onclick="addDailyExpense()" title="Registrar gasto">💸</button>
+    </div>
+  </div>
   <div class="card" style="border-color:var(--accent);">
     <div class="card-title">🏦 Ahorros Acumulados</div>
     <div class="amount positive" id="savingsAmount">$0.00</div>
@@ -545,6 +631,19 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   <div id="paymentList"></div>
 </div>
 
+<!-- AHORROS -->
+<div id="pageSavings" class="page">
+  <div class="header">
+    <h1>🏦 Ahorros</h1>
+    <p>Administra tus ahorros e inversiones</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Total Ahorrado</div>
+    <div class="amount positive" id="savingsPageTotal">$0.00</div>
+  </div>
+  <div id="savingsPageList"></div>
+</div>
+
 <!-- SETTINGS -->
 <div id="pageSettings" class="page">
   <div class="header">
@@ -581,7 +680,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   </div>
   <div class="card" style="margin-top:20px;">
     <p style="font-size:0.8rem;color:var(--text2);text-align:center;">
-      FinHogar v2.0<br>Datos almacenados localmente y sincronizados vía Firebase
+      FinHogar v12.0<br>Datos almacenados localmente y sincronizados vía Firebase
     </p>
   </div>
 </div>
@@ -614,6 +713,10 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   <button class="nav-item" onclick="navigate('Payments')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     <span>Pagos</span>
+  </button>
+  <button class="nav-item" onclick="navigate('Savings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    <span>Ahorros</span>
   </button>
   <button class="nav-item" onclick="navigate('Settings')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.67 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.67a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -702,7 +805,7 @@ function initFirebase() {
         if (remote.incomes) data.incomes = remote.incomes;
         if (remote.debts) data.debts = remote.debts;
         if (remote.payments) data.payments = remote.payments;
-        if (remote.savings) data.savings = remote.savings;
+        data.savings = remote.savings || [];
         if (remote.settings) data.settings = { ...data.settings, ...remote.settings };
         saveLocal();
         updateUI();
@@ -736,11 +839,11 @@ function syncToCloud() {
   if (!roomRef || !isOnline) return;
   updateSyncStatus('syncing');
   roomRef.set({
-    incomes: data.incomes,
-    debts: data.debts,
-    payments: data.payments,
-    savings: data.savings,
-    settings: data.settings,
+    incomes: data.incomes || [],
+    debts: data.debts || [],
+    payments: data.payments || [],
+    savings: data.savings || [],
+    settings: data.settings || {},
     lastUpdate: Date.now()
   }).then(() => {
     updateSyncStatus('online');
@@ -1009,6 +1112,7 @@ function updateUI() {
   updateIncomePage();
   updateDebtsPage();
   updatePaymentsPage();
+  updateSavingsPage();
   generateAIAdvice();
 }
 
@@ -1036,7 +1140,7 @@ function updateDashboard() {
   // Render savings mini-list
   let savingsHtml = '';
   if (data.savings.length > 0) {
-    data.savings.sort((a, b) => new Date(b.date) - new Date(a.date));
+    data.savings.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     data.savings.slice(0, 3).forEach(s => {
       savingsHtml += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.8rem;"><span>' + s.name + '</span><span style="color:var(--accent);font-weight:600;">' + formatMoney(s.amount) + '</span></div>';
     });
@@ -1045,29 +1149,74 @@ function updateDashboard() {
     savingsHtml = '<div style="font-size:0.8rem;color:var(--text2);text-align:center;padding:10px;">Sin ahorros registrados. ¡Empieza hoy!</div>';
   }
   document.getElementById('savingsList').innerHTML = savingsHtml;
+  bindListButtons('savingsList', {
+    'delete-saving': deleteSaving
+  });
 
-  // Render planning card
-  const plan = getPayoffPlan();
+  // Render planning card - ESTRATEGIA AUTOMÁTICA según situación
+  const plans = getPayoffPlan();
   const planCard = document.getElementById('planningCard');
   const planContent = document.getElementById('planningContent');
-  if (plan && plan.plan.length > 0) {
+  if (plans && plans.length > 0) {
     planCard.style.display = 'block';
-    let planHtml = '<div style="margin-bottom:8px;"><strong>Ingresos quincenales:</strong> ' + formatMoney(plan.monthlyIncome) + '</div>';
-    planHtml += '<div style="margin-bottom:8px;"><strong>Pagos mensuales:</strong> ' + formatMoney(plan.monthlyPayments) + '</div>';
-    planHtml += '<div style="margin-bottom:12px;"><strong>Disponible extra:</strong> <span style="color:' + (plan.available >= 0 ? 'var(--accent)' : 'var(--danger)') + ';">' + formatMoney(plan.available) + '</span></div>';
-    planHtml += '<div style="font-weight:600;margin-bottom:6px;">🎯 Estrategia: Paga primero la deuda más pequeña</div>';
-    plan.plan.forEach((p, i) => {
-      planHtml += '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + (i+1) + '. <strong>' + p.name + '</strong> — Mensual: ' + formatMoney(p.monthly);
-      if (p.canPayExtra) planHtml += ' <span style="color:var(--accent);">(+' + formatMoney(p.extraAmount) + ' extra)</span>';
-      planHtml += '<br><span style="font-size:0.75rem;color:var(--text2);">Restante: ' + formatMoney(p.remaining) + '</span></div>';
+
+    // Elegir estrategia automática según situación económica
+    let selectedPlan = plans[0]; // Default: Bola de Nieve
+    let strategyReason = '';
+
+    const hasOverdue = activeDebts.some(d => new Date(d.limitDate) < new Date());
+    const debtCount = activeDebts.length;
+    const available = plans[0].available;
+    const totalDebt = plans[0].totalDebt;
+
+    if (hasOverdue) {
+      // Prioridad 1: Deudas vencidas
+      selectedPlan = plans.find(p => p.strategy.includes('Vencidas')) || plans[0];
+      strategyReason = '🚨 Estrategia automática: Tienes deudas VENCIDAS. Se priorizan primero para evitar más intereses.';
+    } else if (available < 0) {
+      // Prioridad 2: Déficit - pago mínimo
+      selectedPlan = plans.find(p => p.strategy.includes('Mínimo')) || plans[0];
+      strategyReason = '⚠️ Estrategia automática: Tus pagos superan tus ingresos. Se sugiere pagar lo mínimo y buscar más ingresos.';
+    } else if (debtCount >= 4) {
+      // Prioridad 3: Muchas deudas - consolidación
+      selectedPlan = plans.find(p => p.strategy.includes('Consolidación')) || plans[0];
+      strategyReason = '🔄 Estrategia automática: Tienes ' + debtCount + ' deudas. La consolidación reduce estrés y unifica pagos.';
+    } else if (available > totalDebt * 0.3) {
+      // Prioridad 4: Mucho disponible - agresivo
+      selectedPlan = plans.find(p => p.strategy.includes('Agresivo')) || plans[0];
+      strategyReason = '🔥 Estrategia automática: Tienes buen flujo (' + formatMoney(available) + '). Se sugiere pagar agresivamente para liberarte rápido.';
+    } else if (available > 0 && available < totalDebt * 0.1) {
+      // Prioridad 5: Poco disponible - bola de nieve
+      selectedPlan = plans.find(p => p.strategy.includes('Bola de Nieve')) || plans[0];
+      strategyReason = '🎯 Estrategia automática: Margen justo. Bola de Nieve: paga la deuda más pequeña primero para ganar momentum.';
+    } else {
+      // Default: Bola de Nieve
+      selectedPlan = plans.find(p => p.strategy.includes('Bola de Nieve')) || plans[0];
+      strategyReason = '🎯 Estrategia automática: Bola de Nieve. Paga la deuda más pequeña primero para motivarte y liberar flujo.';
+    }
+
+    let planHtml = '<div style="margin-bottom:10px;"><strong>Ingresos quincenales:</strong> ' + formatMoney(selectedPlan.monthlyIncome) + '</div>';
+    planHtml += '<div style="margin-bottom:10px;"><strong>Pagos mensuales:</strong> ' + formatMoney(selectedPlan.monthlyPayments) + '</div>';
+    planHtml += '<div style="margin-bottom:14px;"><strong>Disponible extra:</strong> <span style="color:' + (selectedPlan.available >= 0 ? 'var(--accent)' : 'var(--danger)') + ';">' + formatMoney(selectedPlan.available) + '</span></div>';
+    planHtml += '<div style="font-size:0.8rem;color:var(--text2);margin-bottom:12px;padding:8px;background:rgba(16,185,129,0.1);border-radius:8px;border-left:3px solid var(--accent);">' + strategyReason + '</div>';
+    planHtml += '<div style="font-weight:700;margin-bottom:10px;color:var(--accent);font-size:0.9rem;">' + selectedPlan.strategy + '</div>';
+
+    selectedPlan.plan.forEach((p, i) => {
+      planHtml += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.8rem;">';
+      planHtml += (i+1) + '. <strong>' + p.name + '</strong><br>';
+      planHtml += '💵 Mensual: ' + formatMoney(p.monthly);
+      if (p.extra > 0) planHtml += ' <span style="color:var(--accent);font-weight:600;">+ Extra: ' + formatMoney(p.extra) + '</span>';
+      planHtml += '<br><span style="color:var(--text2);">📉 Restante: ' + formatMoney(p.remaining) + ' | 💰 Total: ' + formatMoney(p.totalPay) + '</span>';
+      planHtml += '</div>';
     });
+
     planContent.innerHTML = planHtml;
   } else {
     planCard.style.display = 'none';
   }
 
   const upcoming = activeDebts
-    .filter(d => new Date(d.dueDate) >= new Date())
+    .filter(d => !d.fullyPaid)
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
   document.getElementById('nextPayment').textContent = upcoming
     ? upcoming.name + ' - ' + new Date(upcoming.dueDate).toLocaleDateString("es-MX", { day:"numeric", month:"short" })
@@ -1075,9 +1224,10 @@ function updateDashboard() {
 
   // Pie chart
   const categories = {};
-  data.debts.forEach(d => {
+  data.debts.filter(d => !d.fullyPaid).forEach(d => {
     const cat = d.category || 'other';
-    categories[cat] = (categories[cat] || 0) + d.amount;
+    const remaining = d.amount - (d.paid || 0);
+    categories[cat] = (categories[cat] || 0) + remaining;
   });
   const catColors = { home: '#10b981', services: '#3b82f6', credit: '#ef4444', loan: '#f59e0b', medical: '#8b5cf6', other: '#64748b' };
   const catLabels = { home: 'Hogar', services: 'Servicios', credit: 'Crédito', loan: 'Préstamo', medical: 'Médico', other: 'Otro' };
@@ -1110,7 +1260,7 @@ function updateDashboard() {
     const label = new Date(m + '-01').toLocaleDateString("es-MX", { month: "short" });
     barHtml += '<div class="chart-bar-item"><div class="chart-bar-fill" style="height:' + h + '%;background:var(--accent)"></div><div class="chart-bar-label">' + label + '</div></div>';
   });
-  document.getElementById('barChart').innerHTML = barHtml || '<div style="color:var(--text2);font-size:0.8rem;">Sin pagos registrados</div>';
+  document.getElementById('barChart').innerHTML = barHtml || '<div style="color:var(--text2);font-size:0.8rem;text-align:center;width:100%;">Sin pagos registrados</div>';
 
   // Recent activity
   const allActivity = [
@@ -1148,6 +1298,10 @@ function updateIncomePage() {
     });
   }
   document.getElementById('incomeList').innerHTML = html;
+  bindListButtons('incomeList', {
+    'edit-income': editIncome,
+    'delete-income': deleteIncome
+  });
 }
 
 function updateDebtsPage() {
@@ -1174,6 +1328,11 @@ function updateDebtsPage() {
     });
   }
   document.getElementById('debtList').innerHTML = html;
+  bindListButtons('debtList', {
+    'pay-debt': payDebt,
+    'edit-debt': editDebt,
+    'delete-debt': deleteDebt
+  });
 }
 
 function updatePaymentsPage() {
@@ -1190,7 +1349,7 @@ function updatePaymentsPage() {
   if (recentPayments.length === 0) {
     html = '<div class="empty-state"><p>No hay pagos registrados en los últimos 3 meses</p></div>';
   } else {
-    recentPayments.sort((a, b) => new Date(b.date) - new Date(a.date));
+    recentPayments.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     recentPayments.forEach(pay => {
       html += '<div class="list-item"><div class="info"><div class="name">' + pay.debtName + '</div><div class="meta">' + new Date(pay.date).toLocaleDateString("es-MX") + '</div></div><div class="right"><div class="price" style="color:var(--accent2);">' + formatMoney(pay.amount) + '</div></div></div>';
     });
@@ -1199,20 +1358,132 @@ function updatePaymentsPage() {
 }
 
 // ========== AUTO CLEAN OLD PAYMENTS ==========
-function cleanOldPayments() {
-  const threeMonthsAgo = new Date();
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-  threeMonthsAgo.setHours(0, 0, 0, 0);
 
-  const oldCount = data.payments.filter(p => new Date(p.date) < threeMonthsAgo).length;
-  if (oldCount > 0) {
-    data.payments = data.payments.filter(p => new Date(p.date) >= threeMonthsAgo);
-    saveLocal();
-    syncToCloud();
-    console.log('🧹 ' + oldCount + ' pago(s) antiguo(s) eliminado(s) automáticamente');
+function updateSavingsPage() {
+  const total = (data.savings || []).reduce((s, x) => s + x.amount, 0);
+  document.getElementById('savingsPageTotal').textContent = formatMoney(total);
+
+  let html = '';
+  if (!data.savings || data.savings.length === 0) {
+    html = '<div class="empty-state"><p>🏦 No hay ahorros registrados. ¡Empieza a construir tu futuro hoy!</p></div>';
+  } else {
+    data.savings.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    data.savings.forEach(s => {
+      html += '<div class="list-item"><div class="info"><div class="name">' + s.name + '</div><div class="meta">' + new Date(s.date).toLocaleDateString("es-MX") + '</div></div><div class="right"><div class="price" style="color:var(--accent);">' + formatMoney(s.amount) + '</div><div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-small btn-secondary" style="width:auto;" data-action="edit-saving" data-id="' + s.id + '">✏️</button><button class="btn btn-small btn-danger" style="width:auto;" data-action="delete-saving" data-id="' + s.id + '">🗑️</button></div></div></div>';
+    });
   }
+  document.getElementById('savingsPageList').innerHTML = html;
+  bindListButtons('savingsPageList', {
+    'edit-saving': editSaving,
+    'delete-saving': deleteSaving
+  });
 }
 
+let savingsDanceIndex = 0;
+const danceClasses = ['dancing', 'dancing2', 'dancing3', 'dancing4', 'dancing5'];
+
+function triggerSavingsCelebration() {
+  const aiIcon = document.querySelector('.ai-icon');
+  const aiCard = document.getElementById('aiCard');
+  const aiText = document.getElementById('aiText');
+  if (!aiIcon || !aiCard || !aiText) return;
+
+  const lastSaving = data.savings && data.savings.length > 0 ? data.savings[data.savings.length - 1] : null;
+  const lastAmount = lastSaving ? lastSaving.amount : 0;
+
+  danceClasses.forEach(c => aiIcon.classList.remove(c));
+  const danceClass = danceClasses[savingsDanceIndex % danceClasses.length];
+  aiIcon.classList.add(danceClass);
+  aiCard.classList.add('celebrating');
+  savingsDanceIndex++;
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // NIVEL 1: ≤ $200 → IA GROSERA / ENOJADA / CHISTOSA
+  // ═══════════════════════════════════════════════════════════════════════
+  const rudeMessages = [
+    '😒 ¿En serio? ' + formatMoney(lastAmount) + '. Eso ni alcanza para unos tacos. ¡Échale más ganas, vago!',
+    '🙄 Mi abuela ahorra más de su pensión. ¡Agrégale un peso más, no seas tacaño!',
+    '😤 ¡Vamos! ' + formatMoney(lastAmount) + ' no es nada. Con eso no compras ni una pizza. ¡Ponte las pilas!',
+    '🤨 ¿Eso es todo? ' + formatMoney(lastAmount) + '. Te gastas más en cerveza los viernes. ¡Prioridades, amigo!',
+    '😂 JAJA. ' + formatMoney(lastAmount) + ' es lo que gasta un niño en dulces. ¡Eres un adulto, actúa como tal!',
+    '🙃 Con ' + formatMoney(lastAmount) + '? No vas a ningún lado. Ni para el Uber alcanza. ¡Más esfuerzo!',
+    '😬 ' + formatMoney(lastAmount) + '. Tu banco está riendo de ti. ¡Dale más amor a ese ahorro!',
+    '🤦 ' + formatMoney(lastAmount) + '. Eso ni siquiera es un ahorro, es un redondeo. ¡Exígete más!',
+    '🤬 ¡¿EN SERIO?! ' + formatMoney(lastAmount) + '. Eso no alcanza ni para unos tacos al pastor. ¡PONTE LAS PILAS, VAGO!',
+    '💀 ' + formatMoney(lastAmount) + '. ¿Eso es TODO? Mi sobrina de 5 años ahorra más de su domingo. ¡DAS PENA!',
+    '😤 ¡VAMOS! ' + formatMoney(lastAmount) + '. Con eso no compras ni los zapatos de UN pie. ¡ÉCHALE MÁS GANAS, PEREZOSO!',
+    '🙄 ¿Eso es un ahorro o un chiste? ' + formatMoney(lastAmount) + '. Te gastas más en papitas los sábados. ¡VERGÜENZA!',
+    '🤦 ' + formatMoney(lastAmount) + '. JAJA. Eso es lo que dejas de propina en el Oxxo. ¡NO ES UN AHORRO, ES UNA BROMA!',
+    '💢 Con ' + formatMoney(lastAmount) + ' no llegas a NINGÚN LADO. Ni para el pasaje del camión alcanza ida y vuelta. ¡PATÉTICO!',
+    '😡 ' + formatMoney(lastAmount) + '. Tu cuenta bancaria está LLORANDO de la vergüenza. ¡DALE MÁS AMOR A TU FUTURO!',
+    '🤬 ' + formatMoney(lastAmount) + '. Eso ni siquiera es un ahorro, es el CAMBIO que te sobra del tortas. ¡EXÍGETE MÁS!',
+    '💀 ' + formatMoney(lastAmount) + '. Con eso no compras ni un ataúd de cartón. ¿Quieres morir pobre? ¡AHORRA MÁS!',
+    '😤 ¡POR FAVOR! ' + formatMoney(lastAmount) + '. Eso es lo que gasta un perro en croquetas al mes. ¡ERES UN HUMANO, ACTÚA COMO TAL!',
+    '🤨 ' + formatMoney(lastAmount) + '. ¿Te sientes orgulloso? Porque yo me siento AVERGONZADA de ti. ¡MÁS ESFUERZO!',
+    '😡 ' + formatMoney(lastAmount) + '. Tu abuelita con $500 de pensión ahorra más que tú. ¡QUÉ TRISTEZA!',
+    '💢 ' + formatMoney(lastAmount) + '. Ni para un ramo de flores alcanza. ¿Así quieres que te recuerden? ¡AHORRA MÁS!',
+    '🤬 ¡NO MAMES! ' + formatMoney(lastAmount) + '. Eso se lo encuentra uno en el pantalón de lavar. ¡NO ES UN AHORRO!',
+    '🙄 ' + formatMoney(lastAmount) + '. Tu fondo de emergencia se ríe de ti. Es más bien un fondo de "emergencia de 5 minutos". ¡PÉSIMO!'
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // NIVEL 2: > $200 → IA FELIZ / ESPECTACULAR
+  // ═══════════════════════════════════════════════════════════════════════
+  const happyMessages = [
+    '🎉 ¡BOOOOM! ' + formatMoney(lastAmount) + ' ahorrados. ¡Eso SÍ es ahorrar! Tu futuro millonario te aplaude.',
+    '🚀 ¡DESPEGUE! ' + formatMoney(lastAmount) + ' más al cochinito. ¡Eres una máquina de crear riqueza!',
+    '💎 ¡ESPECTACULAR! ' + formatMoney(lastAmount) + ' ahorrados. ¡La disciplina te define! Eres imparable.',
+    '🔥 ¡INCREÍBLE! ' + formatMoney(lastAmount) + ' aportados. ¡Tu fondo de emergencia crece como espuma!',
+    '👑 ¡MAJESTUOSO! ' + formatMoney(lastAmount) + ' ahorrados. ¡Eres un REY/REINA del dinero! Sigue reinando.',
+    '🌟 ¡BRILLANTE! ' + formatMoney(lastAmount) + ' más. ¡La bola de nieve del ahorro está imparable!',
+    '💰 ¡PODEROSO! ' + formatMoney(lastAmount) + ' ahorrados. ¡El dinero ahora trabaja PARA TI!',
+    '🏆 ¡CAMPEÓN ABSOLUTO! ' + formatMoney(lastAmount) + ' aportados. ¡La mayoría gasta, TÚ CONSTRUYES!',
+    '🎊 ¡EXPLOSIVO! ' + formatMoney(lastAmount) + ' ahorrados. ¡Esto ya es EN SERIO! Tu cuenta grita de felicidad.',
+    '🚀 ¡A LA LUNA! ' + formatMoney(lastAmount) + ' más. ¡Eres un COHETE financiero! Nada te detiene.',
+    '💎 ¡MAGISTRAL! ' + formatMoney(lastAmount) + ' ahorrados. ¡La paciencia y disciplina se ven ASÍ!',
+    '🔥 ¡ARRASANDO! ' + formatMoney(lastAmount) + ' aportados. ¡Cada peso es un ladrillo de tu imperio financiero!',
+    '👑 ¡SOBERANO! ' + formatMoney(lastAmount) + ' ahorrados. ¡El trono de la libertad financiera te espera!',
+    '🌟 ¡DESLUMBRANTE! ' + formatMoney(lastAmount) + ' más. ¡Eres un FARO de disciplina en un mar de gastadores!',
+    '💰 ¡INMENSO! ' + formatMoney(lastAmount) + ' ahorrados. ¡Tu futuro yo te manda a besar los pies!',
+    '🏆 ¡HISTÓRICO! ' + formatMoney(lastAmount) + ' aportados. ¡Esto va para los libros de historia financiera personal!',
+    '🎉 ¡TRIUNFAL! ' + formatMoney(lastAmount) + ' ahorrados. ¡La independencia financiera ya NO es un sueño, es un PLAN!',
+    '🚀 ¡ESTRATOSFÉRICO! ' + formatMoney(lastAmount) + ' más. ¡Vuelas por encima de la mediocridad!',
+    '💎 ¡MONUMENTAL! ' + formatMoney(lastAmount) + ' ahorrados. ¡Esto ya es PATRIMONIO REAL!',
+    '🔥 ¡INAGOTABLE! ' + formatMoney(lastAmount) + ' aportados. ¡Tu capacidad de ahorro es INFINITA!',
+    '👑 ¡DIVINO! ' + formatMoney(lastAmount) + ' ahorrados. ¡Los dioses del dinero te SONRÍEN!',
+    '🌟 ¡COSMICO! ' + formatMoney(lastAmount) + ' más. ¡Tu riqueza crece a velocidad de la LUZ!',
+    '💰 ¡ETERNO! ' + formatMoney(lastAmount) + ' ahorrados. ¡Has alcanzado la INMORTALIDAD financiera!'
+  ];
+
+  let message, borderColor, textColor;
+  if (lastAmount <= 200) {
+    message = rudeMessages[Math.floor(Math.random() * rudeMessages.length)];
+    borderColor = '#ef4444';
+    textColor = '#ef4444';
+  } else {
+    message = happyMessages[Math.floor(Math.random() * happyMessages.length)];
+    borderColor = '#10b981';
+    textColor = '#10b981';
+  }
+
+  aiText.textContent = message;
+  aiText.style.color = textColor;
+  aiText.style.fontWeight = '700';
+  aiText.style.fontSize = '1rem';
+  aiText.style.lineHeight = '1.6';
+  aiCard.style.borderColor = borderColor;
+
+  setTimeout(() => {
+    aiIcon.classList.remove(danceClass);
+    aiCard.classList.remove('celebrating');
+    aiText.style.color = '';
+    aiText.style.fontWeight = '';
+    aiText.style.fontSize = '';
+    aiText.style.lineHeight = '';
+    aiCard.style.borderColor = '';
+    generateAIAdvice();
+  }, 6000);
+}
 // ========== AI ADVISOR ==========
 let currentAdviceIndex = 0;
 
@@ -1221,97 +1492,266 @@ function generateAIAdvice() {
   const monthlyData = getUpcomingMonthlyPayments();
   const totalSavings = getTotalSavings();
   const activeDebts = data.debts.filter(d => !d.fullyPaid);
-  const totalDebtRemaining = activeDebts.reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
   const balance = monthlyIncome - monthlyData.total;
   const overdue = activeDebts.filter(d => new Date(d.limitDate) < new Date()).length;
-  const plan = getPayoffPlan();
+  const dailyExpenses = data.payments.filter(p => p.isDailyExpense);
+  const totalDailyExpenses = dailyExpenses.reduce((s, p) => s + p.amount, 0);
 
   const advices = [];
 
-  // 1. Welcome / Empty state
-  if (data.incomes.length === 0 && data.debts.length === 0) {
-    advices.push('👋 ¡Bienvenido a FinHogar! Registra tus ingresos (quincenales o mensuales) y deudas para que la IA te ayude a planificar.');
-  }
-
-  // 2. Overdue alert (highest priority)
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 1: ALERTAS DE VENCIMIENTO (máxima prioridad)
+  // ═══════════════════════════════════════════════════════════
   if (overdue > 0) {
     const overdueDebts = activeDebts.filter(d => new Date(d.limitDate) < new Date());
     const names = overdueDebts.map(d => d.name).join(', ');
-    advices.push('🚨 URGENTE: Tienes ' + overdue + ' deuda(s) vencida(s): ' + names + '. Paga inmediatamente para evitar intereses moratorios y afectar tu historial crediticio.');
+    advices.push('🚨 URGENTE: Tienes ' + overdue + ' deuda(s) vencida(s): ' + names + '. Paga inmediatamente para evitar intereses moratorios.');
+    advices.push('⏰ ACCIÓN INMEDIATA: Llama a ' + names + ' y negocia una extensión. Cada día de retraso te cuesta más.');
+    advices.push('💀 PELIGRO: Las deudas vencidas dañan tu historial crediticio. Paga lo que puedas HOY, aunque sea el mínimo.');
   }
 
-  // 3. Income vs monthly payments analysis
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 2: FLUJO DE CAJA (ingresos vs pagos)
+  // Basado en BALANCE (dinero disponible), NO en ahorro acumulado
+  // NUNCA felicita - solo informa, advierte o sugiere
+  // ═══════════════════════════════════════════════════════════
   if (monthlyIncome > 0) {
     if (balance < 0) {
-      advices.push('📉 ALERTA: Tus pagos mensuales (' + formatMoney(monthlyData.total) + ') superan tus ingresos proyectados (' + formatMoney(monthlyIncome) + '). Déficit: ' + formatMoney(Math.abs(balance)) + '. Considera: renegociar plazos, buscar ingresos extra, o consolidar deudas.');
-    } else if (balance > 0 && balance < monthlyIncome * 0.1) {
-      advices.push('⚠️ MARGEN JUSTO: Solo te quedan ' + formatMoney(balance) + ' después de pagos mensuales. Cualquier imprevisto te afectaría. Prioriza crear un fondo de emergencia de al menos $2,000.');
-    } else if (balance >= monthlyIncome * 0.1) {
-      advices.push('✅ BUEN FLUJO: Tienes ' + formatMoney(balance) + ' disponibles después de tus pagos mensuales. Te recomiendo destinar el 50% a acelerar deudas y el 50% a ahorro.');
+      advices.push('📉 ALERTA ROJA: Tus pagos mensuales (' + formatMoney(monthlyData.total) + ') superan tus ingresos (' + formatMoney(monthlyIncome) + '). Déficit: ' + formatMoney(Math.abs(balance)) + '. Considera renegociar plazos o buscar ingresos extra.');
+      advices.push('🔥 CRISIS: Gastas ' + formatMoney(Math.abs(balance)) + ' más de lo que ganas. Opciones: vender algo, freelance, o pedir prestado a familia SIN intereses.');
+      advices.push('📊 DIAGNÓSTICO: Necesitas reducir gastos o aumentar ingresos. La deuda mala crece exponencialmente.');
+    } else if (balance > 0 && balance < monthlyIncome * 0.05) {
+      advices.push('⚠️ MARGEN CRÍTICO: Solo te quedan ' + formatMoney(balance) + ' después de pagos. Cualquier imprevisto te quiebra. Prioriza fondo de emergencia YA.');
+      advices.push('🩹 AL LÍMITE: ' + formatMoney(balance) + ' no cubre ni una emergencia médica menor. Busca ingresos extra esta semana.');
+    } else if (balance > 0 && balance < monthlyIncome * 0.15) {
+      advices.push('⚡ MARGEN JUSTO: Tienes ' + formatMoney(balance) + ' libres después de pagos. Es mejor que nada, pero necesitas más colchón. Ahorra mínimo el 10% de cada quincena.');
+      advices.push('📈 ANÁLISIS: ' + formatMoney(balance) + ' de margen. Si mantienes este ritmo 6 meses, tendrás un colchón decente. Pero aún es insuficiente.');
+    } else if (balance >= monthlyIncome * 0.15 && balance < monthlyIncome * 0.30) {
+      advices.push('📊 FLUJO ESTABLE: Tienes ' + formatMoney(balance) + ' disponibles después de pagos. Tienes margen, pero NO te confíes. Ahorra primero, gasta después.');
+      advices.push('🎯 SUGERENCIA: Con ' + formatMoney(balance) + ' extra, aplica la regla 50/30/20. Pero recuerda: DINERO DISPONIBLE NO ES AHORRO. ¡Registra tu ahorro!');
+    } else if (balance >= monthlyIncome * 0.30) {
+      advices.push('📊 FLUJO POSITIVO: ' + formatMoney(balance) + ' disponibles después de pagos. Tienes margen amplio, pero CUIDADO: dinero disponible no es ahorro.');
+      advices.push('⚠️ ADVERTENCIA: Con ' + formatMoney(balance) + ' libres, es fácil gastar de más. Transfiere el 20% a ahorros ANTES de gastar en gustos.');
+      advices.push('🎯 SUGERENCIA: Tienes ' + formatMoney(balance) + ' de margen. En un año podrías tener ' + formatMoney(balance * 24) + ' ahorrados... PERO SOLO SI LOS REGISTRAS como ahorro.');
     }
   }
 
-  // 4. Payment strategy - Snowball method
-  if (activeDebts.length > 1 && plan && plan.available > 0) {
-    const smallest = activeDebts.sort((a, b) => (a.amount - (a.paid || 0)) - (b.amount - (b.paid || 0)))[0];
-    const smallestRemaining = smallest.amount - (smallest.paid || 0);
-    advices.push('🎯 ESTRATEGIA BOLA DE NIEVE: Enfócate en pagar primero "' + smallest.name + '" (restan ' + formatMoney(smallestRemaining) + '). Al liquidarla, liberas ' + formatMoney(smallest.monthlyPayment || smallestRemaining) + ' mensuales para atacar la siguiente. ¡Así ganas momentum!');
-  }
-
-  // 5. Savings advice
-  if (totalSavings === 0 && monthlyIncome > 0) {
-    advices.push('🏦 AHORRO: No tienes ahorros registrados. Empieza con el 10% de cada ingreso quincenal. Si ganas ' + formatMoney(monthlyIncome) + ' quincenal, ahorra ' + formatMoney(monthlyIncome * 0.1) + ' por quincena. ¡Pequeñas cantidades suman!');
-  } else if (totalSavings > 0 && totalSavings < monthlyIncome) {
-    advices.push('🏦 AHORRO: Tienes ' + formatMoney(totalSavings) + ' ahorrados. Meta recomendada: 3 meses de gastos (' + formatMoney(monthlyData.total * 3) + '). Te faltan ' + formatMoney(monthlyData.total * 3 - totalSavings) + '. Sigue así.');
-  } else if (totalSavings >= monthlyIncome * 3) {
-    advices.push('🏦 ¡EXCELENTE! Tienes un fondo de emergencia sólido (' + formatMoney(totalSavings) + '). Ahora puedes destinar excedentes a inversiones o acelerar el pago de deudas.');
-  }
-
-  // 6. Biweekly income specific advice
-  const biweeklyIncomes = data.incomes.filter(i => i.freq === 'biweekly');
-  if (biweeklyIncomes.length > 0 && monthlyData.details.length > 0) {
-    const qAmount = biweeklyIncomes.reduce((s, i) => s + i.amount, 0);
-    const nextPayment = monthlyData.details.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 3: PRÓXIMO PAGO (recordatorios)
+  // ═══════════════════════════════════════════════════════════
+  if (activeDebts.length > 0) {
+    const nextPayment = activeDebts
+      .filter(d => !d.fullyPaid)
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
     if (nextPayment) {
-      const daysUntil = Math.ceil((new Date(nextPayment.date) - new Date()) / (1000 * 60 * 60 * 24));
-      if (daysUntil > 0 && daysUntil <= 15) {
-        advices.push('📅 PRÓXIMA QUINCENA: Tu próximo pago es "' + nextPayment.name + '" (' + formatMoney(nextPayment.amount) + ') en ' + daysUntil + ' días. Con tus ingresos quincenales de ' + formatMoney(qAmount) + ', asegúrate de reservar el pago desde tu próximo depósito.');
+      const daysUntil = Math.ceil((new Date(nextPayment.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+      const remaining = nextPayment.amount - (nextPayment.paid || 0);
+      if (daysUntil <= 0) {
+        advices.push('⏰ VENCIDO: "' + nextPayment.name + '" venció hace ' + Math.abs(daysUntil) + ' días. Restan ' + formatMoney(remaining) + '. ¡Paga YA!');
+      } else if (daysUntil <= 3) {
+        advices.push('🔴 URGENTE: "' + nextPayment.name + '" vence en ' + daysUntil + ' días. Restan ' + formatMoney(remaining) + '. ¡Separa el dinero AHORA!');
+      } else if (daysUntil <= 7) {
+        advices.push('🟡 PRÓXIMO: "' + nextPayment.name + '" vence en ' + daysUntil + ' días. Restan ' + formatMoney(remaining) + '. Prepárate.');
+      } else if (daysUntil <= 15) {
+        advices.push('📅 ESTA QUINCENA: "' + nextPayment.name + '" vence en ' + daysUntil + ' días. Restan ' + formatMoney(remaining) + '. Ve apartando.');
       }
     }
   }
 
-  // 7. Debt-free celebration
-  if (activeDebts.length === 0 && data.debts.length > 0) {
-    advices.push('🎉 ¡LIBRE DE DEUDAS! Todas tus deudas están pagadas. Ahora destina el ' + formatMoney(monthlyData.total) + ' que pagabas en deudas directamente a inversiones o ahorro. ¡Tu yo del futuro te lo agradecerá!');
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 4: INGRESOS (gestión de ingresos quincenales)
+  // ═══════════════════════════════════════════════════════════
+  const biweeklyIncomes = data.incomes.filter(i => i.freq === 'biweekly');
+  if (biweeklyIncomes.length > 0) {
+    const qAmount = biweeklyIncomes.reduce((s, i) => s + i.amount, 0);
+    advices.push('💵 INGRESOS: Recibes ' + formatMoney(qAmount) + ' pesos quincenales. Si aumentas un 10% (' + formatMoney(qAmount * 0.1) + '), aceleras TODO.');
+    if (data.incomes.length === 1) {
+      advices.push('📈 DIVERSIFICA: Solo tienes 1 fuente de ingreso. Busca freelance, ventas, o un segundo trabajo. Más ingresos = más seguridad.');
+    }
+    advices.push('💡 CONSEJO INGRESOS: Automatiza la transferencia del 10% a ahorros el día que te pagan. Lo que no ves, no lo gastas.');
+  } else if (data.incomes.length === 0) {
+    advices.push('⚠️ SIN INGRESOS: Registra al menos un ingreso quincenal para que la IA pueda analizar tu situación financiera.');
   }
 
-  // 8. General tips
-  if (advices.length === 0 || advices.length < 3) {
-    advices.push('💡 CONSEJO: La regla 50/30/20 sugiere: 50% necesidades (deudas), 30% gustos, 20% ahorro. Si tus deudas superan el 50% de tus ingresos, es hora de ajustar.');
-    advices.push('💡 CONSEJO: Si tienes deudas con intereses diferentes, considera el método AVALANCHA: paga primero la deuda con mayor tasa de interés para pagar menos en total.');
-    advices.push('💡 CONSEJO: Automatiza tus ahorros. Cada quincena transfiere automáticamente el 10% a una cuenta separada. Lo que no ves, no lo gastas.');
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 5: GASTOS DIARIOS
+  // ═══════════════════════════════════════════════════════════
+  if (totalDailyExpenses > 0) {
+    advices.push('📊 GASTOS DIARIOS: Has gastado ' + formatMoney(totalDailyExpenses) + ' pesos en gastos diarios. Revisa si alguno fue innecesario.');
+    if (totalDailyExpenses > monthlyIncome * 0.2) {
+      advices.push('🚨 ALERTA GASTOS: ' + formatMoney(totalDailyExpenses) + ' pesos en gastos diarios es más del 20% de tus ingresos. ¡Controla los "antojitos"!');
+    }
+    if (totalDailyExpenses > monthlyIncome * 0.3) {
+      advices.push('💀 CRISIS GASTOS: ' + formatMoney(totalDailyExpenses) + ' pesos en gastos diarios es más del 30% de tus ingresos. ¡ESTÁS VIVIENDO POR ENCIMA DE TUS POSIBILIDADES!');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 6: AHORRO ACUMULADO (SOLO basado en totalSavings)
+  // INDEPENDIENTE del dinero disponible/balance
+  // Si totalSavings < 1800 → SIEMPRE enojada/presionando
+  // Si totalSavings >= 1800 → Feliz, cada vez más
+  // ═══════════════════════════════════════════════════════════
+  if (totalSavings === 0) {
+    advices.push('🏦 AHORRO CERO: No tienes ahorros. Una llanta ponchada te endeuda. ¡AHORRA ALGO HOY, aunque sean $50 pesos!');
+    advices.push('🆘 EMERGENCIA: Sin colchón de ahorros, cualquier imprevisto te manda a la quiebra. Empieza con $100 pesos esta quincena.');
+    advices.push('😤 ¡EN SERIO?! CERO pesos ahorrados. ¿Quieres morir pobre? ¡REGISTRA UN AHORRO AHORA MISMO!');
+  }
+  else if (totalSavings > 0 && totalSavings < 250) {
+    advices.push('🤬 ¡PATÉTICO! Solo ' + formatMoney(totalSavings) + ' pesos ahorrados. Eso no alcanza ni para unos tacos al pastor. ¡PONTE LAS PILAS!');
+    advices.push('💀 ' + formatMoney(totalSavings) + ' pesos. Tu abuelita con pensión ahorra más. ¿Te sientes orgulloso? NO DEBERÍAS.');
+    advices.push('😤 META AHORRO: $1,800 pesos. Llevas ' + formatMoney(totalSavings) + '. ¡TE FALTAN ' + formatMoney(1800 - totalSavings) + '! ¡ACELERA!');
+  }
+  else if (totalSavings >= 250 && totalSavings < 500) {
+    advices.push('🙄 ' + formatMoney(totalSavings) + ' pesos ahorrados. Va... pero VAAAAA. A este ritmo llegas a $1,800 en... ¿un año? ¡NO MAMES!');
+    advices.push('😒 ' + formatMoney(totalSavings) + ' pesos. Eso es lo que cuesta una cena. ¿Tu futuro vale una cena? ¡PATÉTICO!');
+    advices.push('⚡ META AHORRO: $1,800. Llevas ' + formatMoney(totalSavings) + '. ¡Faltan ' + formatMoney(1800 - totalSavings) + '! ¡Échale MÁS ganas!');
+  }
+  else if (totalSavings >= 500 && totalSavings < 1000) {
+    advices.push('🤨 ' + formatMoney(totalSavings) + ' pesos. Llegaste a la mitad del camino... ¡PERO LA MITAD NO SIRVE! ¡Necesitas $1,800!');
+    advices.push('😤 ' + formatMoney(totalSavings) + ' pesos ahorrados. Bien... para un niño de primaria. ¡TÚ ERES ADULTO! ¡EXÍGETE!');
+    advices.push('💢 META AHORRO: $1,800. Llevas ' + formatMoney(totalSavings) + '. ¡Aún faltan ' + formatMoney(1800 - totalSavings) + '! ¡NO TE RINDAS!');
+  }
+  else if (totalSavings >= 1000 && totalSavings < 1500) {
+    advices.push('😒 ' + formatMoney(totalSavings) + ' pesos. ¡Casi llegas! Pero "casi" no cuenta. ¡Necesitas $1,800 para que yo sonría!');
+    advices.push('🙄 ' + formatMoney(totalSavings) + ' pesos ahorrados. Estás cerca... pero cerca no paga la renta. ¡DALE EL EMPUJÓN FINAL!');
+    advices.push('⚡ META AHORRO: $1,800. Llevas ' + formatMoney(totalSavings) + '. ¡Solo faltan ' + formatMoney(1800 - totalSavings) + '! ¡TÚ PUEDES!');
+  }
+  else if (totalSavings >= 1500 && totalSavings < 1800) {
+    advices.push('😤 ' + formatMoney(totalSavings) + ' pesos. ¡YA CASI! Te faltan ' + formatMoney(1800 - totalSavings) + ' pesos para la meta. ¡NO PARES AHORA!');
+    advices.push('💢 ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡A UN PASO! Un ahorro más y llegas a $1,800. ¡DALE CON TODO!');
+    advices.push('🎯 META AHORRO: $1,800. Llevas ' + formatMoney(totalSavings) + '. ¡Solo ' + formatMoney(1800 - totalSavings) + ' más y CELEBRAMOS!');
+  }
+  else if (totalSavings >= 1800 && totalSavings < 3000) {
+    advices.push('🎉 ¡LO LOGRASTE! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡PASASTE LOS $1,800! Eres OFICIALMENTE un ahorrador. ¡FELICIDADES!');
+    advices.push('💎 ' + formatMoney(totalSavings) + ' pesos. ¡LA META ESTÁ CUMPLIDA! Ahora sigue a $3,000. ¡No pares, que vas bien!');
+    advices.push('🌟 ¡BRILLANTE! ' + formatMoney(totalSavings) + ' pesos acumulados. Tu disciplina empieza a dar frutos. ¡Sigue así, CAMPEÓN!');
+  }
+  else if (totalSavings >= 3000 && totalSavings < 5000) {
+    advices.push('🚀 ¡IMPARABLE! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡Esto ya es SERIO! La mayoría nunca llega aquí. ¡TÚ SÍ!');
+    advices.push('💰 ' + formatMoney(totalSavings) + ' pesos. ¡Tu fondo de emergencia ya cubre imprevistos! Sigue a $5,000. ¡VAMOS!');
+    advices.push('🔥 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡Eres una MÁQUINA! Cada peso cuenta y tú lo sabes. ¡LEYENDA!');
+  }
+  else if (totalSavings >= 5000 && totalSavings < 10000) {
+    advices.push('👑 ¡MAJESTUOSO! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡Esto ya es PATRIMONIO! Estás construyendo tranquilidad real.');
+    advices.push('💎 ' + formatMoney(totalSavings) + ' pesos. ¡Eres de los POCOS que realmente ahorran! Tu disciplina es INSPIRADORA.');
+    advices.push('🌟 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡La bola de nieve crece! Sigue a $10,000. ¡EL CIELO ES EL LÍMITE!');
+  }
+  else if (totalSavings >= 10000 && totalSavings < 20000) {
+    advices.push('🏆 ¡ESPECTACULAR! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡Esto ya es NIVEL PRO! La independencia financiera te espera.');
+    advices.push('🚀 ' + formatMoney(totalSavings) + ' pesos. ¡El dinero ahora trabaja PARA TI! Eres el jefe de tu destino financiero.');
+    advices.push('💰 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡La mayoría gasta, TÚ CONSTRUYES! Eres un EJEMPLO a seguir.');
+  }
+  else if (totalSavings >= 20000 && totalSavings < 35000) {
+    advices.push('⭐ ¡LEYENDA! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡Esto ya es IMPERIO! Puedes vivir meses sin trabajar.');
+    advices.push('👑 ' + formatMoney(totalSavings) + ' pesos. ¡Los dioses del dinero te SONRÍEN! Eres su favorito. ¡Sigue reinando!');
+    advices.push('🔥 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡Tu capacidad de ahorro es INFINITA! El cielo es el límite.');
+  }
+  else if (totalSavings >= 35000 && totalSavings < 50000) {
+    advices.push('🌍 ¡MAGNATE! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡ERES UN MAGNATE! Es hora de diversificar en bienes raíces.');
+    advices.push('💎 ' + formatMoney(totalSavings) + ' pesos. ¡Tu legado financiero es INMORTAL! Tu familia te lo agradecerá por siempre.');
+    advices.push('🚀 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡La libertad financiera ya NO es un sueño, es TU REALIDAD!');
+  }
+  else if (totalSavings >= 50000 && totalSavings < 75000) {
+    advices.push('🌟 ¡ÍDOLO NACIONAL! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡CASI NADIE LLEGA AQUÍ! Eres una máquina de riqueza.');
+    advices.push('👑 ' + formatMoney(totalSavings) + ' pesos. ¡Tu riqueza crece a velocidad de la LUZ! El universo conspira a tu favor.');
+    advices.push('💰 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡Eres DUEÑO de tu destino! Nadie te dice qué hacer.');
+  }
+  else if (totalSavings >= 75000 && totalSavings < 100000) {
+    advices.push('🏆 ¡DIOS DEL AHORRO! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡HAS LOGRADO LO IMPOSIBLE! Eres ÚNICO.');
+    advices.push('🚀 ' + formatMoney(totalSavings) + ' pesos. ¡Tu patrimonio es LEGENDARIO! La historia financiera te recordará.');
+    advices.push('💎 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡Eres INMORTAL en el mundo del ahorro! ¡INCREÍBLE!');
+  }
+  else if (totalSavings >= 100000 && totalSavings < 150000) {
+    advices.push('🌌 ¡EMPERADOR FINANCIERO! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡ESTO YA ES UN IMPERIO! ¡LIBERTAD TOTAL!');
+    advices.push('👑 ' + formatMoney(totalSavings) + ' pesos. ¡Puedes vivir AÑOS sin trabajar! Eres el AMO de tu vida.');
+    advices.push('🔥 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡Tu legado vivirá por GENERACIONES! ¡Eres ETERNO!');
+  }
+  else if (totalSavings >= 150000 && totalSavings < 250000) {
+    advices.push('⭐ ¡LEYENDA VIVA! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡ERES UN MITO! La gente contará tu historia.');
+    advices.push('🌍 ' + formatMoney(totalSavings) + ' pesos. ¡Tu riqueza es COSMICA! El universo te aplaude de pie.');
+    advices.push('💰 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡Eres MÁS RICO que el 99% de la población! ¡INCREÍBLE!');
+  }
+  else if (totalSavings >= 250000) {
+    advices.push('🌟 ¡INMORTAL! ' + formatMoney(totalSavings) + ' pesos ahorrados. ¡HAS TRASCENDIDO! Eres un DIOS del dinero.');
+    advices.push('👑 ' + formatMoney(totalSavings) + ' pesos. ¡Tu nombre será recordado por SIEMPRE! Eres LEYENDA PURA.');
+    advices.push('🚀 ' + formatMoney(totalSavings) + ' pesos acumulados. ¡EL CIELO NO ES EL LÍMITE, ES TU PUNTO DE PARTIDA!');
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 7: ESTRATEGIAS DE PAGO
+  // ═══════════════════════════════════════════════════════════
+  if (activeDebts.length > 1) {
+    const sortedSnowball = [...activeDebts].sort((a, b) => (a.amount - (a.paid || 0)) - (b.amount - (b.paid || 0)));
+    const smallest = sortedSnowball[0];
+    const smallestRemaining = smallest.amount - (smallest.paid || 0);
+    advices.push('🎯 BOLA DE NIEVE: Paga primero "' + smallest.name + '" (restan ' + formatMoney(smallestRemaining) + '). Al liquidarla liberas flujo mensual. ¡Gana momentum!');
+
+    const sortedAvalanche = [...activeDebts].sort((a, b) => (b.amount - (b.paid || 0)) - (a.amount - (a.paid || 0)));
+    const biggest = sortedAvalanche[0];
+    advices.push('🌊 AVALANCHA: Alternativa: paga primero "' + biggest.name + '" (restan ' + formatMoney(biggest.amount - (biggest.paid || 0)) + '). Pagas menos intereses totales.');
+
+    if (activeDebts.length >= 3) {
+      advices.push('🔄 CONSOLIDACIÓN: Tienes ' + activeDebts.length + ' deudas activas. Considera una consolidación en una sola con menor interés.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CATEGORÍA 8: CONSEJOS GENERALES (no repetidos con otras categorías)
+  // ═══════════════════════════════════════════════════════════
+  const generalTips = [
+    '💡 CONSEJO: La regla 50/30/20 sugiere: 50% necesidades, 30% gustos, 20% ahorro.',
+    '💡 CONSEJO: Automatiza tus ahorros. Transfiere el 10% a una cuenta separada cada quincena.',
+    '💡 CONSEJO: El método AVALANCHA paga primero la deuda con mayor interés para pagar menos total.',
+    '💡 CONSEJO: Antes de comprar algo, espera 48 horas. El 80% de las compras impulsivas se evitan así.',
+    '💡 CONSEJO: Lleva un registro de CADA peso que gastas. Lo que no se mide, no se mejora.',
+    '💡 CONSEJO: Negocia tus servicios cada 6 meses. Llama a tu compañía de internet, celular, seguro.',
+    '💡 CONSEJO: El fondo de emergencia debe cubrir 3-6 meses de gastos. No lo inviertas, mantenlo líquido.',
+    '💡 CONSEJO: Si recibes un aguinaldo o bono, ahorra el 50% inmediatamente. El otro 50% disfrútalo.',
+    '💡 CONSEJO: Compara precios antes de comprar. Busca en 3 tiendas antes de decidir.',
+    '💡 CONSEJO: La deuda de tarjeta de crédito es la PEOR. Paga el total cada mes o no la uses.',
+    '💡 CONSEJO: Si tienes pareja, hablen de dinero una vez por semana. La transparencia evita problemas.',
+    '💡 CONSEJO: Revisa tu estado de cuenta cada 3 días. Conocer tus números es poder.',
+    '💡 CONSEJO: Si ganas extra (freelance, venta, regalo), ahorra el 70%. Es dinero que no esperabas.',
+    '💡 CONSEJO: Los "pagos chiquitos" de $50-$100 al mes en suscripciones suman. Cancela las que no uses.',
+    '💡 CONSEJO: Compra al mayoreo lo que uses mucho (papel, jabón, arroz). Ahorras 20-30% a largo plazo.',
+    '💡 CONSEJO: Si tu deuda tiene interés mayor al 15% anual, priorízala sobre TODO, incluso sobre ahorros.',
+    '💡 CONSEJO: Usa efectivo para gastos diarios. Es más difícil gastar billetes que deslizar tarjeta.',
+    '💡 CONSEJO: Cada vez que quieras comprar algo, pregúntate: "¿Esto me acerca o me aleja de mi meta?"',
+    '💡 CONSEJO: Si tienes hijos, involúcralos en las finanzas. Enséñales a ahorrar el 10% de su mesada.',
+    '💡 CONSEJO: Revisa apps de banco: muchas tienen "alcancías digitales" automáticas. Actívalas.',
+    '💡 CONSEJO: Si tienes deudas en diferentes bancos, consolida en el que tenga menor tasa. Ahorras miles.',
+    '💡 CONSEJO: El ahorro no es lo que te SOBRA al final del mes. Es lo que GUARDAS PRIMERO.',
+    '💡 CONSEJO: Celebra cada meta de ahorro alcanzada. Un helado, una película. El cerebro necesita recompensas.',
+    '💡 CONSEJO: Si ganas quincenalmente, divide tus pagos mensuales en dos. Paga la mitad con cada quincena.',
+    '💡 CONSEJO: Los CETES son una buena opción para ahorros de 1-3 meses. Seguros, líquidos, rendimiento modesto.'
+  ];
+
+  // Agregar tips generales hasta tener suficientes consejos
+  let tipIndex = 0;
+  while (advices.length < 25 && tipIndex < generalTips.length) {
+    advices.push(generalTips[tipIndex]);
+    tipIndex++;
   }
 
   // Fallback
   if (advices.length === 0) {
-    advices.push('👋 ¡Bienvenido a FinHogar! Registra tus ingresos y deudas para recibir consejos personalizados de planificación financiera.');
+    advices.push('👋 ¡Bienvenido a FinHogar! Registra tus ingresos y deudas para recibir consejos personalizados.');
   }
 
-  // Store advices for rotation
   window._aiAdvices = advices;
   window._aiCurrentIndex = 0;
 
-  // Display first advice
   displayAIAdvice(0);
-}
-
-function displayAIAdvice(index) {
+}function displayAIAdvice(index) {
   if (!window._aiAdvices || window._aiAdvices.length === 0) return;
   const advice = window._aiAdvices[index % window._aiAdvices.length];
-  document.getElementById('aiText').textContent = advice;
-  document.getElementById('aiText').style.animation = 'none';
-  document.getElementById('aiText').offsetHeight; // trigger reflow
-  document.getElementById('aiText').style.animation = 'fadeIn 0.5s ease';
+  const el = document.getElementById('aiText');
+  if (!el) return;
+  el.textContent = advice;
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'fadeIn 0.5s ease';
 }
 
 function nextAIAdvice() {
@@ -1320,12 +1760,12 @@ function nextAIAdvice() {
   displayAIAdvice(window._aiCurrentIndex);
 }
 
-// Auto-rotate advice every 30 seconds
+// Auto-rotate advice every 15 seconds
 setInterval(() => {
   if (window._aiAdvices && window._aiAdvices.length > 1) {
     nextAIAdvice();
   }
-}, 6000);
+}, 15000);
 
 // ========== PWA INSTALL ==========
 let deferredPrompt;
@@ -1550,49 +1990,162 @@ function getPayoffPlan() {
   const activeDebts = data.debts.filter(d => !d.fullyPaid);
   if (activeDebts.length === 0) return null;
 
-  // Sort by interest-implied urgency (smallest first = snowball method)
-  const sorted = [...activeDebts].sort((a, b) => {
-    const remA = a.amount - (a.paid || 0);
-    const remB = b.amount - (b.paid || 0);
-    return remA - remB;
-  });
-
   const monthlyIncome = getMonthlyIncomeProjection();
   const monthlyPayments = getUpcomingMonthlyPayments().total;
   const available = monthlyIncome - monthlyPayments;
+  const remainingBudget = available > 0 ? available : 0;
+  const totalDebt = activeDebts.reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
 
-  let plan = [];
-  let remainingBudget = available > 0 ? available : 0;
-
-  sorted.forEach((debt, idx) => {
-    const remaining = debt.amount - (debt.paid || 0);
-    const monthly = debt.splitMonths > 1 ? debt.monthlyPayment : remaining;
-
-    plan.push({
-      name: debt.name,
-      remaining,
-      monthly,
-      priority: idx + 1,
-      canPayExtra: idx === 0 && remainingBudget > 0,
-      extraAmount: idx === 0 ? remainingBudget : 0
-    });
+  const snowball = [...activeDebts].sort((a, b) => (a.amount - (a.paid || 0)) - (b.amount - (b.paid || 0)));
+  const avalanche = [...activeDebts].sort((a, b) => (b.amount - (b.paid || 0)) - (a.amount - (a.paid || 0)));
+  const urgent = [...activeDebts].sort((a, b) => new Date(a.limitDate) - new Date(b.limitDate));
+  const expensive = [...activeDebts].sort((a, b) => {
+    const mA = a.splitMonths > 1 ? a.monthlyPayment : (a.amount - (a.paid || 0));
+    const mB = b.splitMonths > 1 ? b.monthlyPayment : (b.amount - (b.paid || 0));
+    return mB - mA;
   });
+  const cheap = [...activeDebts].sort((a, b) => {
+    const mA = a.splitMonths > 1 ? a.monthlyPayment : (a.amount - (a.paid || 0));
+    const mB = b.splitMonths > 1 ? b.monthlyPayment : (b.amount - (b.paid || 0));
+    return mA - mB;
+  });
+  const categoryOrder = { services: 1, home: 2, medical: 3, credit: 4, loan: 5, other: 6 };
+  const byCategory = [...activeDebts].sort((a, b) => (categoryOrder[a.category] || 99) - (categoryOrder[b.category] || 99));
+  const overdueFirst = [...activeDebts].sort((a, b) => {
+    const aO = new Date(a.limitDate) < new Date() ? 1 : 0;
+    const bO = new Date(b.limitDate) < new Date() ? 1 : 0;
+    return bO - aO;
+  });
+  const quick = [...activeDebts].sort((a, b) => {
+    const monthsA = a.splitMonths > 1 ? (a.splitMonths - (a.paidMonths || 0)) : 1;
+    const monthsB = b.splitMonths > 1 ? (b.splitMonths - (b.paidMonths || 0)) : 1;
+    return monthsA - monthsB;
+  });
+  const longterm = [...activeDebts].sort((a, b) => (b.splitMonths || 1) - (a.splitMonths || 1));
 
-  return { plan, monthlyIncome, monthlyPayments, available };
+  function makePlan(debts, strategyName, extraStrategy) {
+    let plan = [];
+    let budget = remainingBudget;
+    debts.forEach((debt, idx) => {
+      const remaining = debt.amount - (debt.paid || 0);
+      const monthly = debt.splitMonths > 1 ? debt.monthlyPayment : remaining;
+      let extra = 0;
+      if (extraStrategy === 'first' && idx === 0) extra = budget;
+      else if (extraStrategy === 'proportional') extra = budget > 0 ? budget / debts.length : 0;
+      else if (extraStrategy === 'double' && idx === 0) extra = monthly;
+      else if (extraStrategy === 'half' && idx === 0) extra = budget * 0.5;
+      plan.push({ name: debt.name, remaining, monthly, extra, totalPay: monthly + extra, priority: idx + 1 });
+    });
+    return { strategy: strategyName, plan, monthlyIncome, monthlyPayments, available, totalDebt };
+  }
+
+  return [
+    makePlan(snowball, '🎯 Bola de Nieve', 'first'),
+    makePlan(avalanche, '🌊 Avalancha', 'first'),
+    makePlan(urgent, '⏰ Más Urgente', 'first'),
+    makePlan(expensive, '💸 Más Cara Mensual', 'first'),
+    makePlan(cheap, '💰 Más Barata', 'first'),
+    makePlan(byCategory, '📂 Por Categoría', 'first'),
+    makePlan([...activeDebts], '⚖️ Híbrido 50/50', 'half'),
+    makePlan([...activeDebts], '🛡️ Pago Mínimo + Ahorro', 'none'),
+    makePlan([...activeDebts], '🔥 Agresivo', 'first'),
+    makePlan([...activeDebts], '⚖️ Equilibrado', 'proportional'),
+    makePlan(quick, '⚡ Rápido', 'first'),
+    makePlan(longterm, '📅 Largo Plazo', 'first'),
+    makePlan(overdueFirst, '🚨 Vencidas Primero', 'first'),
+    makePlan([...activeDebts], '🎲 Rotativo', 'first'),
+    makePlan([...activeDebts], '⏫ Doble Pago', 'double'),
+    makePlan([...activeDebts], '📆 Semanal', 'proportional'),
+    makePlan([...activeDebts], '🏦 Ahorro + Deuda 50/50', 'half'),
+    { strategy: '🔄 Consolidación (' + formatMoney(totalDebt) + ' a 12 meses)', plan: [{ name: 'Consolidada', remaining: totalDebt, monthly: totalDebt / 12, extra: 0, totalPay: totalDebt / 12, priority: 1 }], monthlyIncome, monthlyPayments, available, totalDebt }
+  ];
 }
 
 // ========== SAVINGS ==========
+function goToDashboard() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pageDashboard').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[0].classList.add('active');
+  window.scrollTo(0, 0);
+  updateUI();
+}
+
 function addSaving() {
   const name = document.getElementById('saveName').value.trim();
   const amount = parseFloat(document.getElementById('saveAmount').value);
   const date = document.getElementById('saveDate').value;
   if (!name || !amount || !date) { alert('Completa todos los campos'); return; }
 
+  // Mostrar loading en el botón
+  const btn = document.querySelector('#modalBody .btn-primary');
+  const originalText = btn ? btn.textContent : 'Guardar Ahorro';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Guardando...';
+  }
+
+  if (!data.savings) data.savings = [];
   data.savings.push({
     id: Date.now().toString(),
     name, amount, date,
     createdAt: Date.now()
   });
+  saveLocal();
+  syncToCloud();
+
+  // Pequeña pausa para que el usuario vea el loading, luego ir al Dashboard y celebrar
+  setTimeout(() => {
+    closeModal();
+    goToDashboard();
+    // Pequeño delay para que el DOM del Dashboard se renderice
+    setTimeout(() => {
+      triggerSavingsCelebration();
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }, 300);
+  }, 600);
+}
+
+
+function editSaving(id) {
+  const s = data.savings.find(x => x.id === id);
+  if (!s) return;
+
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  overlay.classList.add('show');
+
+  title.textContent = 'Editar Ahorro';
+  body.innerHTML = `
+    <label>Concepto</label>
+    <input type="text" id="saveName" value="${s.name}" placeholder="Ej: Fondo emergencia...">
+    <label>Monto ($)</label>
+    <input type="number" id="saveAmount" value="${s.amount}" placeholder="0.00" step="0.01">
+    <label>Fecha</label>
+    <input type="date" id="saveDate" value="${s.date}">
+    <button class="btn btn-primary" onclick="saveEditSaving('${id}')">Guardar Cambios</button>
+  `;
+}
+
+function saveEditSaving(id) {
+  const s = data.savings.find(x => x.id === id);
+  if (!s) return;
+
+  const name = document.getElementById('saveName').value.trim();
+  const amount = parseFloat(document.getElementById('saveAmount').value);
+  const date = document.getElementById('saveDate').value;
+
+  if (!name || !amount || !date) { alert('Completa todos los campos'); return; }
+
+  s.name = name;
+  s.amount = amount;
+  s.date = date;
+  s.updatedAt = Date.now();
+
   saveLocal();
   syncToCloud();
   closeModal();
@@ -1608,42 +2161,24 @@ function deleteSaving(id) {
 }
 
 function getTotalSavings() {
-  return data.savings.reduce((s, i) => s + i.amount, 0);
+  return (data.savings || []).reduce((s, i) => s + i.amount, 0);
 }
 
-// ========== EVENT DELEGATION FOR DYNAMIC BUTTONS ==========
-document.addEventListener('click', function(e) {
-  const btn = e.target.closest('[data-action]');
-  if (!btn) return;
+// ========== BIND EVENTS TO DYNAMIC BUTTONS ==========
+function bindListButtons(containerId, actionMap) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('[data-action]').forEach(btn => {
+    btn.onclick = function(e) {
+      e.stopPropagation();
+      const action = this.dataset.action;
+      const id = this.dataset.id;
+      if (actionMap[action]) actionMap[action](id);
+    };
+  });
+}
 
-  const action = btn.dataset.action;
-  const id = btn.dataset.id;
 
-  if (action === 'delete-income') {
-    e.stopPropagation();
-    deleteIncome(id);
-  }
-  else if (action === 'edit-income') {
-    e.stopPropagation();
-    editIncome(id);
-  }
-  else if (action === 'pay-debt') {
-    e.stopPropagation();
-    payDebt(id);
-  }
-  else if (action === 'edit-debt') {
-    e.stopPropagation();
-    editDebt(id);
-  }
-  else if (action === 'delete-debt') {
-    e.stopPropagation();
-    deleteDebt(id);
-  }
-  else if (action === 'delete-saving') {
-    e.stopPropagation();
-    deleteSaving(id);
-  }
-});
 
 </script>
 </body>
