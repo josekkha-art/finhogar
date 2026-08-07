@@ -680,7 +680,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   </div>
   <div class="card" style="margin-top:20px;">
     <p style="font-size:0.8rem;color:var(--text2);text-align:center;">
-      FinHogar v12.0<br>Datos almacenados localmente y sincronizados vía Firebase
+      FinHogar v13.0<br>Datos almacenados localmente y sincronizados vía Firebase
     </p>
   </div>
 </div>
@@ -760,14 +760,21 @@ function init() {
   cleanOldPayments();
   const saved = localStorage.getItem('finhogar_data');
   const savedRoom = localStorage.getItem('finhogar_room');
+
   if (saved) {
     try { data = JSON.parse(saved); } catch(e){}
   }
+
   if (savedRoom) {
     data.roomCode = savedRoom;
     showApp();
     initFirebase();
+  } else {
+    // Asegurar que se muestre el login si no hay sesión
+    document.getElementById('pageLogin').classList.add('active');
+    document.getElementById('bottomNav').style.display = 'none';
   }
+
   updateUI();
 }
 
@@ -914,6 +921,7 @@ function addDebt() {
   const limitDate = document.getElementById('debtLimitDate').value;
   const category = document.getElementById('debtCategory').value;
   const splitMonths = parseInt(document.getElementById('debtSplit').value) || 1;
+  const minPayment = parseFloat(document.getElementById('debtMinPayment').value) || 0;
 
   if (!name || !amount || !dueDate || !limitDate) { alert('Completa todos los campos'); return; }
 
@@ -923,6 +931,10 @@ function addDebt() {
     paid: 0,
     createdAt: Date.now()
   };
+
+  if (minPayment > 0) {
+    debt.minPayment = minPayment;
+  }
 
   if (splitMonths > 1) {
     debt.monthlyPayment = amount / splitMonths;
@@ -1096,6 +1108,11 @@ function openModal(type) {
       </select>
       <label>¿Dividir en meses? (1 = pago único)</label>
       <input type="number" id="debtSplit" value="1" min="1" max="60">
+      <label>Pago mínimo mensual (opcional)</label>
+      <input type="number" id="debtMinPayment" placeholder="Ej: 250.00" step="0.01">
+      <div style="font-size:0.75rem;color:var(--text2);margin-bottom:12px;">
+        💡 Si tienes tarjeta de crédito o préstamo, aquí puedes registrar el pago mínimo obligatorio antes de la fecha límite.
+      </div>
       <button class="btn btn-primary" onclick="addDebt()">Guardar Deuda</button>
     `;
   }
@@ -1323,8 +1340,11 @@ function updateDebtsPage() {
       const pct = ((debt.paid || 0) / debt.amount) * 100;
       const badgeClass = isOverdue ? 'badge-overdue' : 'badge-pending';
       const badgeText = isOverdue ? 'VENCIDA' : 'PENDIENTE';
+      const hasMinPayment = debt.minPayment && debt.minPayment > 0;
+      const minPayHtml = hasMinPayment ? '<div style="font-size:0.75rem;color:var(--warning);margin-top:4px;">💳 Pago mínimo: ' + formatMoney(debt.minPayment) + ' antes del límite</div>' : '';
+      const splitHtml = debt.splitMonths > 1 ? '<div style="font-size:0.75rem;color:var(--text2);">Mensual: ' + formatMoney(debt.monthlyPayment) + ' · Pagados: ' + (debt.paidMonths || 0) + '/' + debt.splitMonths + '</div>' : '';
 
-      html += '<div class="list-item" style="flex-direction:column;align-items:stretch;gap:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="info"><div class="name">' + debt.name + '</div><div class="meta">Pago: ' + new Date(debt.dueDate).toLocaleDateString("es-MX") + ' · Límite: ' + new Date(debt.limitDate).toLocaleDateString("es-MX") + '</div><span class="badge ' + badgeClass + '">' + badgeText + '</span></div><div class="right"><div class="price" style="color:var(--danger);">' + formatMoney(remaining) + '</div><div class="date">de ' + formatMoney(debt.amount) + '</div></div></div>' + (debt.splitMonths > 1 ? '<div style="font-size:0.75rem;color:var(--text2);">Mensual: ' + formatMoney(debt.monthlyPayment) + ' · Pagados: ' + (debt.paidMonths || 0) + '/' + debt.splitMonths + '</div>' : '') + '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-small" style="flex:1;" data-action="pay-debt" data-id="' + debt.id + '">💳 Pagar</button><button class="btn btn-secondary btn-small" style="width:auto;" data-action="edit-debt" data-id="' + debt.id + '">✏️</button><button class="btn btn-secondary btn-small" style="width:auto;" data-action="delete-debt" data-id="' + debt.id + '">🗑️</button></div></div>';
+      html += '<div class="list-item" style="flex-direction:column;align-items:stretch;gap:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="info"><div class="name">' + debt.name + '</div><div class="meta">Pago: ' + new Date(debt.dueDate).toLocaleDateString("es-MX") + ' · Límite: ' + new Date(debt.limitDate).toLocaleDateString("es-MX") + '</div><span class="badge ' + badgeClass + '">' + badgeText + '</span>' + minPayHtml + '</div><div class="right"><div class="price" style="color:var(--danger);">' + formatMoney(remaining) + '</div><div class="date">de ' + formatMoney(debt.amount) + '</div></div></div>' + splitHtml + '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-small" style="flex:1;" data-action="pay-debt" data-id="' + debt.id + '">💳 Pagar</button><button class="btn btn-secondary btn-small" style="width:auto;" data-action="edit-debt" data-id="' + debt.id + '">✏️</button><button class="btn btn-secondary btn-small" style="width:auto;" data-action="delete-debt" data-id="' + debt.id + '">🗑️</button></div></div>';
     });
   }
   document.getElementById('debtList').innerHTML = html;
@@ -1788,22 +1808,24 @@ function installApp() {
   }
 }
 
-// Service Worker
+// Service Worker - Network First para evitar que cachee el login
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE_NAME = 'finhogar-v1';
-    const urlsToCache = ['/'];
+    const CACHE_NAME = 'finhogar-v12';
+    const urlsToCache = [];
+
     self.addEventListener('install', e => {
-      e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
       self.skipWaiting();
     });
+
     self.addEventListener('activate', e => {
       e.waitUntil(clients.claim());
     });
+
     self.addEventListener('fetch', e => {
       e.respondWith(
-        caches.match(e.request).then(response => {
-          return response || fetch(e.request).catch(() => new Response('Offline', {status: 503}));
+        fetch(e.request).catch(() => {
+          return caches.match(e.request);
         })
       );
     });
@@ -1901,6 +1923,11 @@ function editDebt(id) {
     </select>
     <label>¿Dividir en meses? (1 = pago único)</label>
     <input type="number" id="debtSplit" value="${debt.splitMonths || 1}" min="1" max="60">
+    <label>Pago mínimo mensual (opcional)</label>
+    <input type="number" id="debtMinPayment" value="${debt.minPayment || ''}" placeholder="Ej: 250.00" step="0.01">
+    <div style="font-size:0.75rem;color:var(--text2);margin-bottom:12px;">
+      💡 Útil para tarjetas de crédito o préstamos con pago mínimo obligatorio antes del límite.
+    </div>
     <button class="btn btn-primary" onclick="saveEditDebt('${id}')">Guardar Cambios</button>
   `;
 }
@@ -1915,6 +1942,7 @@ function saveEditDebt(id) {
   const limitDate = document.getElementById('debtLimitDate').value;
   const category = document.getElementById('debtCategory').value;
   const splitMonths = parseInt(document.getElementById('debtSplit').value) || 1;
+  const minPayment = parseFloat(document.getElementById('debtMinPayment').value) || 0;
 
   if (!name || !amount || !dueDate || !limitDate) { alert('Completa todos los campos'); return; }
 
@@ -1924,6 +1952,12 @@ function saveEditDebt(id) {
   debt.limitDate = limitDate;
   debt.category = category;
   debt.splitMonths = splitMonths;
+
+  if (minPayment > 0) {
+    debt.minPayment = minPayment;
+  } else {
+    delete debt.minPayment;
+  }
 
   if (splitMonths > 1) {
     debt.monthlyPayment = amount / splitMonths;
