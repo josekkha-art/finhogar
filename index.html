@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f172a">
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIkZpbkhvZ2FyIC0gRmluYW56YXMgZGVsIEhvZ2FyIiwgInNob3J0X25hbWUiOiAiRmluSG9nYXIiLCAiZGVzY3JpcHRpb24iOiAiQXBwIGRlIGZpbmFuemFzIGNvbXBhcnRpZGFzIHBhcmEgdHUgaG9nYXIiLCAic3RhcnRfdXJsIjogIi4iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsICJ0aGVtZV9jb2xvciI6ICIjMGYxNzJhIiwgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwgImljb25zIjogW3sic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTkyIDE5MiclM0UlM0NyZWN0IGZpbGw9JyUyMzEwYjk4MScgd2lkdGg9JzE5MicgaGVpZ2h0PScxOTInIHJ4PSc0OCcvJTNFJTNDdGV4dCB4PSc5NicgeT0nMTMwJyBmb250LXNpemU9JzEwMCcgdGV4dC1hbmNob3I9J21pZGRsZSclM0Xwn4+gJTNDL3RleHQlM0UlM0Mvc3ZnJTNFIiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIn0sIHsic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgNTEyIDUxMiclM0UlM0NyZWN0IGZpbGw9JyUyMzEwYjk4MScgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIHJ4PScxMjgnLyUzRSUzQ3RleHQgeD0nMjU2JyB5PSczNTAnIGZvbnQtc2l6ZT0nMjgwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyUzRfCfj6AlM0MvdGV4dCUzRSUzQy9zdmclM0UiLCAic2l6ZXMiOiAiNTEyeDUxMiIsICJ0eXBlIjogImltYWdlL3N2Zyt4bWwifV19">
+<link rel="manifest" id="dynamicManifest" href="">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%2310b981' width='192' height='192' rx='48'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -680,7 +680,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   </div>
   <div class="card" style="margin-top:20px;">
     <p style="font-size:0.8rem;color:var(--text2);text-align:center;">
-      FinHogar v13.0<br>Datos almacenados localmente y sincronizados vía Firebase
+      FinHogar v13.1<br>Datos almacenados localmente y sincronizados vía Firebase
     </p>
   </div>
 </div>
@@ -757,6 +757,27 @@ let data = {
 
 // ========== INIT ==========
 function init() {
+  // Generar manifest dinámico con start_url correcto
+  try {
+    const manifest = {
+      name: "FinHogar - Finanzas del Hogar",
+      short_name: "FinHogar",
+      description: "App de finanzas compartidas para tu hogar",
+      start_url: window.location.href,
+      display: "standalone",
+      background_color: "#0f172a",
+      theme_color: "#0f172a",
+      orientation: "portrait",
+      icons: [
+        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%2310b981' width='192' height='192' rx='48'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" },
+        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%2310b981' width='512' height='512' rx='128'/%3E%3Ctext x='256' y='350' font-size='280' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml" }
+      ]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    document.getElementById('dynamicManifest').href = manifestUrl;
+  } catch(e) {}
+
   cleanOldPayments();
   const saved = localStorage.getItem('finhogar_data');
   const savedRoom = localStorage.getItem('finhogar_room');
@@ -770,7 +791,6 @@ function init() {
     showApp();
     initFirebase();
   } else {
-    // Asegurar que se muestre el login si no hay sesión
     document.getElementById('pageLogin').classList.add('active');
     document.getElementById('bottomNav').style.display = 'none';
   }
@@ -783,6 +803,7 @@ function joinRoom() {
   if (!code) { alert('Introduce un código'); return; }
   data.roomCode = code;
   localStorage.setItem('finhogar_room', code);
+  saveLocal();
   showApp();
   initFirebase();
 }
@@ -872,7 +893,11 @@ function updateSyncStatus(status) {
 }
 
 function saveLocal() {
-  localStorage.setItem('finhogar_data', JSON.stringify(data));
+  try {
+    localStorage.setItem('finhogar_data', JSON.stringify(data));
+  } catch(e) {
+    console.error('Error guardando datos:', e);
+  }
 }
 
 // ========== NAVIGATION ==========
@@ -1808,35 +1833,29 @@ function installApp() {
   }
 }
 
-// Service Worker - Network First para evitar que cachee el login
+// Service Worker mínimo - solo para que Chrome detecte la PWA
+// NO cacheamos nada para evitar problemas de sesión
 if ('serviceWorker' in navigator) {
-  const swCode = `
-    const CACHE_NAME = 'finhogar-v12';
-    const urlsToCache = [];
-
-    self.addEventListener('install', e => {
-      self.skipWaiting();
-    });
-
-    self.addEventListener('activate', e => {
-      e.waitUntil(clients.claim());
-    });
-
-    self.addEventListener('fetch', e => {
-      e.respondWith(
-        fetch(e.request).catch(() => {
-          return caches.match(e.request);
-        })
-      );
-    });
-  `;
-  const swBlob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl).catch(() => {});
+  navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline', {status: 503}))));
+  `)).then(reg => {
+    console.log('SW registrado');
+  }).catch(err => {
+    console.log('SW no registrado:', err);
+  });
 }
 
 // ========== START ==========
-init();
+document.addEventListener('DOMContentLoaded', function() {
+  init();
+});
+
+// Guardar datos periódicamente y al cerrar la app
+setInterval(saveLocal, 3000);
+window.addEventListener('beforeunload', saveLocal);
+window.addEventListener('pagehide', saveLocal);
 
 
 // ========== EDIT INCOME ==========
