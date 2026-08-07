@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f172a">
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%2310b981' width='192' height='192' rx='48'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -472,6 +472,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   .page { width: 100%; }
 }
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -1855,7 +1856,7 @@ function installApp() {
 
 // Service Worker - archivo real para que Chrome detecte la PWA como instalable
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
+  navigator.serviceWorker.register('sw.js').then(reg => {
     console.log('SW registrado:', reg.scope);
   }).catch(err => {
     console.log('SW error:', err);
