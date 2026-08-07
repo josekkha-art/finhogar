@@ -497,6 +497,8 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
     <label>🔑 Código de acceso compartido</label>
     <input type="text" id="roomCode" placeholder="Ej: CASA2026" maxlength="20" style="text-align:center;font-size:1.2rem;letter-spacing:2px;text-transform:uppercase;">
     <p style="font-size:0.8rem;color:var(--text2);margin-bottom:16px;text-align:center;">Ambos teléfonos deben usar el mismo código para sincronizar</p>
+    <div id="loginDebug" style="font-size:0.7rem;color:var(--accent);margin-bottom:12px;text-align:center;min-height:20px;"></div>
+    <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="recoverSession()">🔑 Recuperar mi sesión guardada</button>
     <button class="btn btn-primary" onclick="joinRoom()">Entrar / Crear</button>
   </div>
   <div class="card" style="margin-top:20px;">
@@ -680,7 +682,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   </div>
   <div class="card" style="margin-top:20px;">
     <p style="font-size:0.8rem;color:var(--text2);text-align:center;">
-      FinHogar v13.1<br>Datos almacenados localmente y sincronizados vía Firebase
+      FinHogar v13.2<br>Datos almacenados localmente y sincronizados vía Firebase
     </p>
   </div>
 </div>
@@ -756,46 +758,65 @@ let data = {
 };
 
 // ========== INIT ==========
-function init() {
-  // Generar manifest dinámico con start_url correcto
-  try {
-    const manifest = {
-      name: "FinHogar - Finanzas del Hogar",
-      short_name: "FinHogar",
-      description: "App de finanzas compartidas para tu hogar",
-      start_url: window.location.href,
-      display: "standalone",
-      background_color: "#0f172a",
-      theme_color: "#0f172a",
-      orientation: "portrait",
-      icons: [
-        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%2310b981' width='192' height='192' rx='48'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" },
-        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%2310b981' width='512' height='512' rx='128'/%3E%3Ctext x='256' y='350' font-size='280' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml" }
-      ]
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-    const manifestUrl = URL.createObjectURL(manifestBlob);
-    document.getElementById('dynamicManifest').href = manifestUrl;
-  } catch(e) {}
-
-  cleanOldPayments();
-  const saved = localStorage.getItem('finhogar_data');
-  const savedRoom = localStorage.getItem('finhogar_room');
-
-  if (saved) {
-    try { data = JSON.parse(saved); } catch(e){}
-  }
-
-  if (savedRoom) {
-    data.roomCode = savedRoom;
+function recoverSession() {
+  const room = localStorage.getItem('finhogar_room');
+  if (room) {
+    data.roomCode = room;
+    const saved = localStorage.getItem('finhogar_data');
+    if (saved) {
+      try { data = JSON.parse(saved); } catch(e) {}
+    }
     showApp();
     initFirebase();
+    updateUI();
+    alert('✅ Sesión recuperada: ' + room);
   } else {
-    document.getElementById('pageLogin').classList.add('active');
-    document.getElementById('bottomNav').style.display = 'none';
+    alert('❌ No hay sesión guardada en este dispositivo. Ingresa tu código primero.');
+  }
+}
+
+function init() {
+  const loginDebug = document.getElementById('loginDebug');
+
+  try {
+    cleanOldPayments();
+  } catch(e) { console.log('cleanOldPayments error:', e); }
+
+  let savedRoom = null;
+  let savedData = null;
+
+  try {
+    savedRoom = localStorage.getItem('finhogar_room');
+    savedData = localStorage.getItem('finhogar_data');
+  } catch(e) {
+    console.log('localStorage read error:', e);
+    if (loginDebug) loginDebug.textContent = '❌ Error leyendo almacenamiento';
   }
 
-  updateUI();
+  if (loginDebug) {
+    loginDebug.textContent = 'Código guardado: ' + (savedRoom || 'NINGUNO') + ' | Datos: ' + (savedData ? 'SÍ' : 'NO');
+  }
+
+  if (savedData) {
+    try { data = JSON.parse(savedData); } catch(e) {}
+  }
+
+  if (savedRoom && savedRoom.trim() !== '') {
+    data.roomCode = savedRoom;
+    try {
+      showApp();
+      initFirebase();
+    } catch(e) {
+      console.log('showApp error:', e);
+    }
+  } else {
+    try {
+      document.getElementById('pageLogin').classList.add('active');
+      document.getElementById('bottomNav').style.display = 'none';
+    } catch(e) {}
+  }
+
+  try { updateUI(); } catch(e) {}
 }
 
 function joinRoom() {
