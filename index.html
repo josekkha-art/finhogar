@@ -1963,49 +1963,57 @@ function editDebt(id) {
     <div style="font-size:0.75rem;color:var(--text2);margin-bottom:12px;">
       💡 Útil para tarjetas de crédito o préstamos con pago mínimo obligatorio antes del límite.
     </div>
-    <button class="btn btn-primary" onclick="saveEditDebt('${id}')">Guardar Cambios</button>
+    <button class="btn btn-primary" onclick="event.stopPropagation(); saveEditDebt('${id}')">Guardar Cambios</button>
   `;
 }
 
 function saveEditDebt(id) {
-  const debt = data.debts.find(d => d.id === id);
-  if (!debt) return;
+  console.log('saveEditDebt llamado con id:', id);
+  try {
+    const debt = data.debts.find(d => d.id === id);
+    if (!debt) { console.log('Deuda no encontrada'); return; }
 
-  const name = document.getElementById('debtName').value.trim();
-  const amount = parseFloat(document.getElementById('debtAmount').value);
-  const dueDate = document.getElementById('debtDueDate').value;
-  const limitDate = document.getElementById('debtLimitDate').value;
-  const category = document.getElementById('debtCategory').value;
-  const splitMonths = parseInt(document.getElementById('debtSplit').value) || 1;
-  const minPayment = parseFloat(document.getElementById('debtMinPayment').value) || 0;
+    const name = document.getElementById('debtName').value.trim();
+    const amount = parseFloat(document.getElementById('debtAmount').value);
+    const dueDate = document.getElementById('debtDueDate').value;
+    const limitDate = document.getElementById('debtLimitDate').value;
+    const category = document.getElementById('debtCategory').value;
+    const splitMonths = parseInt(document.getElementById('debtSplit').value) || 1;
+    const minPaymentInput = document.getElementById('debtMinPayment');
+    const minPayment = minPaymentInput ? parseFloat(minPaymentInput.value) || 0 : 0;
 
-  if (!name || !amount || !dueDate || !limitDate) { alert('Completa todos los campos'); return; }
+    if (!name || !amount || !dueDate || !limitDate) { alert('Completa todos los campos'); return; }
 
-  debt.name = name;
-  debt.amount = amount;
-  debt.dueDate = dueDate;
-  debt.limitDate = limitDate;
-  debt.category = category;
-  debt.splitMonths = splitMonths;
+    debt.name = name;
+    debt.amount = amount;
+    debt.dueDate = dueDate;
+    debt.limitDate = limitDate;
+    debt.category = category;
+    debt.splitMonths = splitMonths;
 
-  if (minPayment > 0) {
-    debt.minPayment = minPayment;
-  } else {
-    delete debt.minPayment;
+    if (minPayment > 0) {
+      debt.minPayment = minPayment;
+    } else {
+      delete debt.minPayment;
+    }
+
+    if (splitMonths > 1) {
+      debt.monthlyPayment = amount / splitMonths;
+    } else {
+      debt.monthlyPayment = undefined;
+    }
+
+    debt.updatedAt = Date.now();
+
+    saveLocal();
+    syncToCloud();
+    closeModal();
+    updateUI();
+    console.log('Deuda guardada correctamente');
+  } catch(err) {
+    console.error('Error en saveEditDebt:', err);
+    alert('Error al guardar: ' + err.message);
   }
-
-  if (splitMonths > 1) {
-    debt.monthlyPayment = amount / splitMonths;
-  } else {
-    debt.monthlyPayment = undefined;
-  }
-
-  debt.updatedAt = Date.now();
-
-  saveLocal();
-  syncToCloud();
-  closeModal();
-  updateUI();
 }
 
 
