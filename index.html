@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIkZpbkhvZ2FyIC0gRmluYW56YXMgZGVsIEhvZ2FyIiwgInNob3J0X25hbWUiOiAiRmluSG9nYXIiLCAiZGVzY3JpcHRpb24iOiAiQXBwIGRlIGZpbmFuemFzIGNvbXBhcnRpZGFzIHBhcmEgdHUgaG9nYXIiLCAic3RhcnRfdXJsIjogIi4iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsICJ0aGVtZV9jb2xvciI6ICIjMGYxNzJhIiwgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwgImljb25zIjogW3sic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTkyIDE5MiclM0UlM0NyZWN0IGZpbGw9JyUyMzEwYjk4MScgd2lkdGg9JzE5MicgaGVpZ2h0PScxOTInIHJ4PSc0OCcvJTNFJTNDdGV4dCB4PSc5NicgeT0nMTMwJyBmb250LXNpemU9JzEwMCcgdGV4dC1hbmNob3I9J21pZGRsZSclM0Xwn4+gJTNDL3RleHQlM0UlM0Mvc3ZnJTNFIiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIn0sIHsic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgNTEyIDUxMiclM0UlM0NyZWN0IGZpbGw9JyUyMzEwYjk4MScgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIHJ4PScxMjgnLyUzRSUzQ3RleHQgeD0nMjU2JyB5PSczNTAnIGZvbnQtc2l6ZT0nMjgwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyUzRfCfj6AlM0MvdGV4dCUzRSUzQy9zdmclM0UiLCAic2l6ZXMiOiAiNTEyeDUxMiIsICJ0eXBlIjogImltYWdlL3N2Zyt4bWwifV19">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%2310b981' width='192' height='192' rx='48'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🏠%3C/text%3E%3C/svg%3E">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FinHogar">
@@ -391,6 +393,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   .page { width: 100%; }
 }
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -637,6 +640,7 @@ let data = {
 
 // ========== INIT ==========
 function init() {
+  cleanOldPayments();
   const saved = localStorage.getItem('finhogar_data');
   const savedRoom = localStorage.getItem('finhogar_room');
   if (saved) {
@@ -1072,7 +1076,7 @@ function updateIncomePage() {
   } else {
     data.incomes.sort((a, b) => new Date(b.date) - new Date(a.date));
     data.incomes.forEach(inc => {
-      html += '<div class="list-item"><div class="info"><div class="name">' + inc.name + '</div><div class="meta">' + new Date(inc.date).toLocaleDateString("es-MX") + ' · ' + inc.type + '</div></div><div class="right"><div class="price" style="color:var(--accent);">' + formatMoney(inc.amount) + '</div><button class="btn btn-small btn-danger" style="margin-top:6px;" onclick="deleteIncome(\' + inc.id + \')">Eliminar</button></div></div>';
+      html += '<div class="list-item"><div class="info"><div class="name">' + inc.name + '</div><div class="meta">' + new Date(inc.date).toLocaleDateString("es-MX") + ' · ' + inc.type + '</div></div><div class="right"><div class="price" style="color:var(--accent);">' + formatMoney(inc.amount) + '</div><button class="btn btn-small btn-danger" style="margin-top:6px;" data-action="edit-income" data-id="' + inc.id + '">✏️</button><button class="btn btn-small btn-danger" style="margin-top:6px;" data-action="delete-income" data-id="' + inc.id + '">Eliminar</button></div></div>';
     });
   }
   document.getElementById('incomeList').innerHTML = html;
@@ -1098,26 +1102,47 @@ function updateDebtsPage() {
       const badgeClass = isOverdue ? 'badge-overdue' : 'badge-pending';
       const badgeText = isOverdue ? 'VENCIDA' : 'PENDIENTE';
 
-      html += '<div class="list-item" style="flex-direction:column;align-items:stretch;gap:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="info"><div class="name">' + debt.name + '</div><div class="meta">Pago: ' + new Date(debt.dueDate).toLocaleDateString("es-MX") + ' · Límite: ' + new Date(debt.limitDate).toLocaleDateString("es-MX") + '</div><span class="badge ' + badgeClass + '">' + badgeText + '</span></div><div class="right"><div class="price" style="color:var(--danger);">' + formatMoney(remaining) + '</div><div class="date">de ' + formatMoney(debt.amount) + '</div></div></div>' + (debt.splitMonths > 1 ? '<div style="font-size:0.75rem;color:var(--text2);">Mensual: ' + formatMoney(debt.monthlyPayment) + ' · Pagados: ' + (debt.paidMonths || 0) + '/' + debt.splitMonths + '</div>' : '') + '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-small" style="flex:1;" onclick="payDebt(\' + debt.id + \')">💳 Pagar</button><button class="btn btn-secondary btn-small" style="width:auto;" onclick="deleteDebt(\' + debt.id + \')">🗑️</button></div></div>';
+      html += '<div class="list-item" style="flex-direction:column;align-items:stretch;gap:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div class="info"><div class="name">' + debt.name + '</div><div class="meta">Pago: ' + new Date(debt.dueDate).toLocaleDateString("es-MX") + ' · Límite: ' + new Date(debt.limitDate).toLocaleDateString("es-MX") + '</div><span class="badge ' + badgeClass + '">' + badgeText + '</span></div><div class="right"><div class="price" style="color:var(--danger);">' + formatMoney(remaining) + '</div><div class="date">de ' + formatMoney(debt.amount) + '</div></div></div>' + (debt.splitMonths > 1 ? '<div style="font-size:0.75rem;color:var(--text2);">Mensual: ' + formatMoney(debt.monthlyPayment) + ' · Pagados: ' + (debt.paidMonths || 0) + '/' + debt.splitMonths + '</div>' : '') + '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div style="display:flex;gap:8px;"><button class="btn btn-primary btn-small" style="flex:1;" data-action="pay-debt" data-id="' + debt.id + '">💳 Pagar</button><button class="btn btn-secondary btn-small" style="width:auto;" data-action="edit-debt" data-id="' + debt.id + '">✏️</button><button class="btn btn-secondary btn-small" style="width:auto;" data-action="delete-debt" data-id="' + debt.id + '">🗑️</button></div></div>';
     });
   }
   document.getElementById('debtList').innerHTML = html;
 }
 
 function updatePaymentsPage() {
-  const total = data.payments.reduce((s, p) => s + p.amount, 0);
+  // Filter payments from last 3 months
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  threeMonthsAgo.setHours(0, 0, 0, 0);
+
+  const recentPayments = data.payments.filter(p => new Date(p.date) >= threeMonthsAgo);
+  const total = recentPayments.reduce((s, p) => s + p.amount, 0);
   document.getElementById('paymentsTotal').textContent = formatMoney(total);
 
   let html = '';
-  if (data.payments.length === 0) {
-    html = '<div class="empty-state"><p>No hay pagos registrados</p></div>';
+  if (recentPayments.length === 0) {
+    html = '<div class="empty-state"><p>No hay pagos registrados en los últimos 3 meses</p></div>';
   } else {
-    data.payments.sort((a, b) => new Date(b.date) - new Date(a.date));
-    data.payments.forEach(pay => {
+    recentPayments.sort((a, b) => new Date(b.date) - new Date(a.date));
+    recentPayments.forEach(pay => {
       html += '<div class="list-item"><div class="info"><div class="name">' + pay.debtName + '</div><div class="meta">' + new Date(pay.date).toLocaleDateString("es-MX") + '</div></div><div class="right"><div class="price" style="color:var(--accent2);">' + formatMoney(pay.amount) + '</div></div></div>';
     });
   }
   document.getElementById('paymentList').innerHTML = html;
+}
+
+// ========== AUTO CLEAN OLD PAYMENTS ==========
+function cleanOldPayments() {
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  threeMonthsAgo.setHours(0, 0, 0, 0);
+
+  const oldCount = data.payments.filter(p => new Date(p.date) < threeMonthsAgo).length;
+  if (oldCount > 0) {
+    data.payments = data.payments.filter(p => new Date(p.date) >= threeMonthsAgo);
+    saveLocal();
+    syncToCloud();
+    console.log('🧹 ' + oldCount + ' pago(s) antiguo(s) eliminado(s) automáticamente');
+  }
 }
 
 // ========== AI ADVISOR ==========
@@ -1180,7 +1205,24 @@ function installApp() {
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  const swCode = "self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503}))));";
+  const swCode = `
+    const CACHE_NAME = 'finhogar-v1';
+    const urlsToCache = ['/'];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(clients.claim());
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(response => {
+          return response || fetch(e.request).catch(() => new Response('Offline', {status: 503}));
+        })
+      );
+    });
+  `;
   const swBlob = new Blob([swCode], { type: 'application/javascript' });
   const swUrl = URL.createObjectURL(swBlob);
   navigator.serviceWorker.register(swUrl).catch(() => {});
@@ -1188,6 +1230,160 @@ if ('serviceWorker' in navigator) {
 
 // ========== START ==========
 init();
+
+
+// ========== EDIT INCOME ==========
+function editIncome(id) {
+  const inc = data.incomes.find(i => i.id === id);
+  if (!inc) return;
+
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  overlay.classList.add('show');
+
+  title.textContent = 'Editar Ingreso';
+  body.innerHTML = `
+    <label>Concepto</label>
+    <input type="text" id="incName" value="${inc.name}" placeholder="Ej: Salario, Freelance...">
+    <label>Monto ($)</label>
+    <input type="number" id="incAmount" value="${inc.amount}" placeholder="0.00" step="0.01">
+    <label>Fecha</label>
+    <input type="date" id="incDate" value="${inc.date}">
+    <label>Tipo</label>
+    <select id="incType">
+      <option value="salary" ${inc.type === 'salary' ? 'selected' : ''}>Salario</option>
+      <option value="freelance" ${inc.type === 'freelance' ? 'selected' : ''}>Freelance</option>
+      <option value="investment" ${inc.type === 'investment' ? 'selected' : ''}>Inversión</option>
+      <option value="other" ${inc.type === 'other' ? 'selected' : ''}>Otro</option>
+    </select>
+    <button class="btn btn-primary" onclick="saveEditIncome('${id}')">Guardar Cambios</button>
+  `;
+}
+
+function saveEditIncome(id) {
+  const inc = data.incomes.find(i => i.id === id);
+  if (!inc) return;
+
+  const name = document.getElementById('incName').value.trim();
+  const amount = parseFloat(document.getElementById('incAmount').value);
+  const date = document.getElementById('incDate').value;
+  const type = document.getElementById('incType').value;
+
+  if (!name || !amount || !date) { alert('Completa todos los campos'); return; }
+
+  inc.name = name;
+  inc.amount = amount;
+  inc.date = date;
+  inc.type = type;
+  inc.updatedAt = Date.now();
+
+  saveLocal();
+  syncToCloud();
+  closeModal();
+  updateUI();
+}
+
+
+// ========== EDIT DEBT ==========
+function editDebt(id) {
+  const debt = data.debts.find(d => d.id === id);
+  if (!debt) return;
+
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  overlay.classList.add('show');
+
+  title.textContent = 'Editar Deuda';
+  body.innerHTML = `
+    <label>¿Qué debes pagar?</label>
+    <input type="text" id="debtName" value="${debt.name}" placeholder="Ej: Renta, Luz, Tarjeta...">
+    <label>Monto total ($)</label>
+    <input type="number" id="debtAmount" value="${debt.amount}" placeholder="0.00" step="0.01">
+    <label>Fecha de pago</label>
+    <input type="date" id="debtDueDate" value="${debt.dueDate}">
+    <label>Fecha límite de pago</label>
+    <input type="date" id="debtLimitDate" value="${debt.limitDate}">
+    <label>Categoría</label>
+    <select id="debtCategory">
+      <option value="home" ${debt.category === 'home' ? 'selected' : ''}>Hogar</option>
+      <option value="services" ${debt.category === 'services' ? 'selected' : ''}>Servicios</option>
+      <option value="credit" ${debt.category === 'credit' ? 'selected' : ''}>Tarjeta de Crédito</option>
+      <option value="loan" ${debt.category === 'loan' ? 'selected' : ''}>Préstamo</option>
+      <option value="medical" ${debt.category === 'medical' ? 'selected' : ''}>Médico</option>
+      <option value="other" ${debt.category === 'other' ? 'selected' : ''}>Otro</option>
+    </select>
+    <label>¿Dividir en meses? (1 = pago único)</label>
+    <input type="number" id="debtSplit" value="${debt.splitMonths || 1}" min="1" max="60">
+    <button class="btn btn-primary" onclick="saveEditDebt('${id}')">Guardar Cambios</button>
+  `;
+}
+
+function saveEditDebt(id) {
+  const debt = data.debts.find(d => d.id === id);
+  if (!debt) return;
+
+  const name = document.getElementById('debtName').value.trim();
+  const amount = parseFloat(document.getElementById('debtAmount').value);
+  const dueDate = document.getElementById('debtDueDate').value;
+  const limitDate = document.getElementById('debtLimitDate').value;
+  const category = document.getElementById('debtCategory').value;
+  const splitMonths = parseInt(document.getElementById('debtSplit').value) || 1;
+
+  if (!name || !amount || !dueDate || !limitDate) { alert('Completa todos los campos'); return; }
+
+  debt.name = name;
+  debt.amount = amount;
+  debt.dueDate = dueDate;
+  debt.limitDate = limitDate;
+  debt.category = category;
+  debt.splitMonths = splitMonths;
+
+  if (splitMonths > 1) {
+    debt.monthlyPayment = amount / splitMonths;
+  } else {
+    debt.monthlyPayment = undefined;
+  }
+
+  debt.updatedAt = Date.now();
+
+  saveLocal();
+  syncToCloud();
+  closeModal();
+  updateUI();
+}
+
+// ========== EVENT DELEGATION FOR DYNAMIC BUTTONS ==========
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+
+  const action = btn.dataset.action;
+  const id = btn.dataset.id;
+
+  if (action === 'delete-income') {
+    e.stopPropagation();
+    deleteIncome(id);
+  }
+  else if (action === 'edit-income') {
+    e.stopPropagation();
+    editIncome(id);
+  }
+  else if (action === 'pay-debt') {
+    e.stopPropagation();
+    payDebt(id);
+  }
+  else if (action === 'edit-debt') {
+    e.stopPropagation();
+    editDebt(id);
+  }
+  else if (action === 'delete-debt') {
+    e.stopPropagation();
+    deleteDebt(id);
+  }
+});
+
 </script>
 </body>
 </html>
