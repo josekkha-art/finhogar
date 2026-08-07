@@ -443,18 +443,19 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
       <div class="ai-title">Asesor Financiero IA</div>
     </div>
     <div class="ai-text" id="aiText">Analizando tus finanzas...</div>
+    <div id="aiPlan" style="margin-top:10px;font-size:0.8rem;color:var(--text2);display:none;"></div>
   </div>
   <div class="card">
-    <div class="card-title">💰 Dinero Disponible</div>
+    <div class="card-title">💰 Dinero Disponible (después de pagos mensuales)</div>
     <div class="amount positive" id="balanceAmount">$0.00</div>
     <div style="display:flex;gap:10px;margin-top:12px;">
       <div style="flex:1;">
-        <div style="font-size:0.7rem;color:var(--text2);">Ingresos</div>
+        <div style="font-size:0.7rem;color:var(--text2);">Ingresos Quincena</div>
         <div style="font-weight:700;color:var(--accent);" id="totalIncome">$0.00</div>
       </div>
       <div style="flex:1;">
-        <div style="font-size:0.7rem;color:var(--text2);">Deudas Pend.</div>
-        <div style="font-weight:700;color:var(--danger);" id="totalDebts">$0.00</div>
+        <div style="font-size:0.7rem;color:var(--text2);">Pagos Mes</div>
+        <div style="font-weight:700;color:var(--danger);" id="monthlyDebts">$0.00</div>
       </div>
       <div style="flex:1;">
         <div style="font-size:0.7rem;color:var(--text2);">Pagado</div>
@@ -471,6 +472,18 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
       <div class="label">Próximo Pago</div>
       <div class="value" style="font-size:0.9rem;color:var(--text2);" id="nextPayment">--</div>
     </div>
+  </div>
+  <div class="card" style="border-color:var(--accent);">
+    <div class="card-title">🏦 Ahorros Acumulados</div>
+    <div class="amount positive" id="savingsAmount">$0.00</div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn btn-primary btn-small" style="flex:1;" onclick="openModal('saving')">+ Registrar Ahorro</button>
+    </div>
+    <div id="savingsList" style="margin-top:10px;"></div>
+  </div>
+  <div class="card" id="planningCard" style="display:none;">
+    <div class="card-title">📋 Plan de Pagos Sugerido</div>
+    <div id="planningContent" style="font-size:0.85rem;line-height:1.6;"></div>
   </div>
   <div class="chart-container">
     <div class="card-title">📈 Distribución de Gastos</div>
@@ -634,7 +647,8 @@ let data = {
   incomes: [],
   debts: [],
   payments: [],
-  settings: { userName: '', partnerName: '', alerts: true, sync: true },
+  savings: [],
+  settings: { userName: '', partnerName: '', alerts: true, sync: true, savingsGoal: 0 },
   roomCode: ''
 };
 
@@ -688,6 +702,7 @@ function initFirebase() {
         if (remote.incomes) data.incomes = remote.incomes;
         if (remote.debts) data.debts = remote.debts;
         if (remote.payments) data.payments = remote.payments;
+        if (remote.savings) data.savings = remote.savings;
         if (remote.settings) data.settings = { ...data.settings, ...remote.settings };
         saveLocal();
         updateUI();
@@ -724,6 +739,7 @@ function syncToCloud() {
     incomes: data.incomes,
     debts: data.debts,
     payments: data.payments,
+    savings: data.savings,
     settings: data.settings,
     lastUpdate: Date.now()
   }).then(() => {
@@ -764,12 +780,13 @@ function addIncome() {
   const name = document.getElementById('incName').value.trim();
   const amount = parseFloat(document.getElementById('incAmount').value);
   const date = document.getElementById('incDate').value;
+  const freq = document.getElementById('incFreq').value;
   const type = document.getElementById('incType').value;
   if (!name || !amount || !date) { alert('Completa todos los campos'); return; }
 
   data.incomes.push({
     id: Date.now().toString(),
-    name, amount, date, type,
+    name, amount, date, type, freq,
     createdAt: Date.now()
   });
   saveLocal();
@@ -928,8 +945,12 @@ function openModal(type) {
       <input type="text" id="incName" placeholder="Ej: Salario, Freelance...">
       <label>Monto ($)</label>
       <input type="number" id="incAmount" placeholder="0.00" step="0.01">
-      <label>Fecha</label>
+      <label>Fecha de inicio / próximo pago</label>
       <input type="date" id="incDate" value="${today}">
+      <label>Frecuencia</label>
+      <select id="incFreq">
+        <option value="biweekly" selected>Quincenal (cada 15 días)</option>
+      </select>
       <label>Tipo</label>
       <select id="incType">
         <option value="salary">Salario</option>
@@ -938,6 +959,17 @@ function openModal(type) {
         <option value="other">Otro</option>
       </select>
       <button class="btn btn-primary" onclick="addIncome()">Guardar Ingreso</button>
+    `;
+  } else if (type === 'saving') {
+    title.textContent = 'Registrar Ahorro';
+    body.innerHTML = `
+      <label>Concepto</label>
+      <input type="text" id="saveName" placeholder="Ej: Fondo emergencia, Vacaciones...">
+      <label>Monto ($)</label>
+      <input type="number" id="saveAmount" placeholder="0.00" step="0.01">
+      <label>Fecha</label>
+      <input type="date" id="saveDate" value="${today}">
+      <button class="btn btn-primary" onclick="addSaving()">Guardar Ahorro</button>
     `;
   } else if (type === 'debt') {
     title.textContent = 'Añadir Deuda';
@@ -985,18 +1017,54 @@ function formatMoney(n) {
 }
 
 function updateDashboard() {
-  const totalIncome = data.incomes.reduce((s, i) => s + i.amount, 0);
-  const totalDebts = data.debts.filter(d => !d.fullyPaid).reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
+  const monthlyIncome = getMonthlyIncomeProjection();
+  const monthlyData = getUpcomingMonthlyPayments();
   const totalPaid = data.payments.reduce((s, p) => s + p.amount, 0);
-  const balance = totalIncome - totalDebts;
+  const totalSavings = getTotalSavings();
+  const balance = monthlyIncome - monthlyData.total;
 
   document.getElementById('balanceAmount').textContent = formatMoney(balance);
-  document.getElementById('totalIncome').textContent = formatMoney(totalIncome);
-  document.getElementById('totalDebts').textContent = formatMoney(totalDebts);
+  document.getElementById('balanceAmount').className = 'amount ' + (balance >= 0 ? 'positive' : 'negative');
+  document.getElementById('totalIncome').textContent = formatMoney(monthlyIncome);
+  document.getElementById('monthlyDebts').textContent = formatMoney(monthlyData.total);
   document.getElementById('totalPaid').textContent = formatMoney(totalPaid);
+  document.getElementById('savingsAmount').textContent = formatMoney(totalSavings);
 
   const activeDebts = data.debts.filter(d => !d.fullyPaid);
   document.getElementById('activeDebtsCount').textContent = activeDebts.length;
+
+  // Render savings mini-list
+  let savingsHtml = '';
+  if (data.savings.length > 0) {
+    data.savings.sort((a, b) => new Date(b.date) - new Date(a.date));
+    data.savings.slice(0, 3).forEach(s => {
+      savingsHtml += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.8rem;"><span>' + s.name + '</span><span style="color:var(--accent);font-weight:600;">' + formatMoney(s.amount) + '</span></div>';
+    });
+    if (data.savings.length > 3) savingsHtml += '<div style="font-size:0.75rem;color:var(--text2);text-align:center;padding-top:6px;">+' + (data.savings.length - 3) + ' más</div>';
+  } else {
+    savingsHtml = '<div style="font-size:0.8rem;color:var(--text2);text-align:center;padding:10px;">Sin ahorros registrados. ¡Empieza hoy!</div>';
+  }
+  document.getElementById('savingsList').innerHTML = savingsHtml;
+
+  // Render planning card
+  const plan = getPayoffPlan();
+  const planCard = document.getElementById('planningCard');
+  const planContent = document.getElementById('planningContent');
+  if (plan && plan.plan.length > 0) {
+    planCard.style.display = 'block';
+    let planHtml = '<div style="margin-bottom:8px;"><strong>Ingresos quincenales:</strong> ' + formatMoney(plan.monthlyIncome) + '</div>';
+    planHtml += '<div style="margin-bottom:8px;"><strong>Pagos mensuales:</strong> ' + formatMoney(plan.monthlyPayments) + '</div>';
+    planHtml += '<div style="margin-bottom:12px;"><strong>Disponible extra:</strong> <span style="color:' + (plan.available >= 0 ? 'var(--accent)' : 'var(--danger)') + ';">' + formatMoney(plan.available) + '</span></div>';
+    planHtml += '<div style="font-weight:600;margin-bottom:6px;">🎯 Estrategia: Paga primero la deuda más pequeña</div>';
+    plan.plan.forEach((p, i) => {
+      planHtml += '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + (i+1) + '. <strong>' + p.name + '</strong> — Mensual: ' + formatMoney(p.monthly);
+      if (p.canPayExtra) planHtml += ' <span style="color:var(--accent);">(+' + formatMoney(p.extraAmount) + ' extra)</span>';
+      planHtml += '<br><span style="font-size:0.75rem;color:var(--text2);">Restante: ' + formatMoney(p.remaining) + '</span></div>';
+    });
+    planContent.innerHTML = planHtml;
+  } else {
+    planCard.style.display = 'none';
+  }
 
   const upcoming = activeDebts
     .filter(d => new Date(d.dueDate) >= new Date())
@@ -1146,41 +1214,118 @@ function cleanOldPayments() {
 }
 
 // ========== AI ADVISOR ==========
+let currentAdviceIndex = 0;
+
 function generateAIAdvice() {
-  const totalIncome = data.incomes.reduce((s, i) => s + i.amount, 0);
+  const monthlyIncome = getMonthlyIncomeProjection();
+  const monthlyData = getUpcomingMonthlyPayments();
+  const totalSavings = getTotalSavings();
   const activeDebts = data.debts.filter(d => !d.fullyPaid);
-  const totalDebts = activeDebts.reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
-  const totalPaid = data.payments.reduce((s, p) => s + p.amount, 0);
-  const balance = totalIncome - totalDebts;
+  const totalDebtRemaining = activeDebts.reduce((s, d) => s + (d.amount - (d.paid || 0)), 0);
+  const balance = monthlyIncome - monthlyData.total;
   const overdue = activeDebts.filter(d => new Date(d.limitDate) < new Date()).length;
+  const plan = getPayoffPlan();
 
-  let advice = '';
+  const advices = [];
 
+  // 1. Welcome / Empty state
   if (data.incomes.length === 0 && data.debts.length === 0) {
-    advice = '👋 ¡Bienvenido a FinHogar! Comienza registrando tus ingresos y deudas para obtener consejos personalizados.';
-  } else if (totalIncome === 0) {
-    advice = '⚠️ No tienes ingresos registrados. Registra tus ingresos para poder calcular tu capacidad de pago.';
-  } else if (overdue > 0) {
-    advice = '🚨 ¡Atención! Tienes ' + overdue + ' deuda(s) vencida(s). Prioriza estos pagos para evitar cargos adicionales.';
-  } else if (balance < 0) {
-    const deficit = Math.abs(balance);
-    const pct = ((totalDebts / totalIncome) * 100).toFixed(0);
-    advice = '📉 Tus deudas representan el ' + pct + '% de tus ingresos. Tienes un déficit de ' + formatMoney(deficit) + '. Considera reducir gastos o buscar ingresos adicionales.';
-  } else if (balance > 0 && totalDebts > 0) {
-    const pct = ((totalDebts / totalIncome) * 100).toFixed(0);
-    advice = '✅ Buen trabajo. Tienes ' + formatMoney(balance) + ' disponible. Tus deudas representan el ' + pct + '% de tus ingresos. Intenta mantener este ratio bajo el 30%.';
-  } else if (totalDebts === 0 && totalIncome > 0) {
-    advice = '🎉 ¡Excelente! No tienes deudas pendientes. Considera ahorrar al menos el 20% de tus ingresos.';
-  } else {
-    advice = '💡 Sigue registrando tus movimientos. Una buena regla es que tus deudas no superen el 30% de tus ingresos mensuales.';
+    advices.push('👋 ¡Bienvenido a FinHogar! Registra tus ingresos (quincenales o mensuales) y deudas para que la IA te ayude a planificar.');
   }
 
-  if (data.settings.partnerName) {
-    advice += ' Recuerda mantener la comunicación con ' + data.settings.partnerName + ' sobre los gastos del hogar.';
+  // 2. Overdue alert (highest priority)
+  if (overdue > 0) {
+    const overdueDebts = activeDebts.filter(d => new Date(d.limitDate) < new Date());
+    const names = overdueDebts.map(d => d.name).join(', ');
+    advices.push('🚨 URGENTE: Tienes ' + overdue + ' deuda(s) vencida(s): ' + names + '. Paga inmediatamente para evitar intereses moratorios y afectar tu historial crediticio.');
   }
 
-  document.getElementById('aiText').textContent = advice;
+  // 3. Income vs monthly payments analysis
+  if (monthlyIncome > 0) {
+    if (balance < 0) {
+      advices.push('📉 ALERTA: Tus pagos mensuales (' + formatMoney(monthlyData.total) + ') superan tus ingresos proyectados (' + formatMoney(monthlyIncome) + '). Déficit: ' + formatMoney(Math.abs(balance)) + '. Considera: renegociar plazos, buscar ingresos extra, o consolidar deudas.');
+    } else if (balance > 0 && balance < monthlyIncome * 0.1) {
+      advices.push('⚠️ MARGEN JUSTO: Solo te quedan ' + formatMoney(balance) + ' después de pagos mensuales. Cualquier imprevisto te afectaría. Prioriza crear un fondo de emergencia de al menos $2,000.');
+    } else if (balance >= monthlyIncome * 0.1) {
+      advices.push('✅ BUEN FLUJO: Tienes ' + formatMoney(balance) + ' disponibles después de tus pagos mensuales. Te recomiendo destinar el 50% a acelerar deudas y el 50% a ahorro.');
+    }
+  }
+
+  // 4. Payment strategy - Snowball method
+  if (activeDebts.length > 1 && plan && plan.available > 0) {
+    const smallest = activeDebts.sort((a, b) => (a.amount - (a.paid || 0)) - (b.amount - (b.paid || 0)))[0];
+    const smallestRemaining = smallest.amount - (smallest.paid || 0);
+    advices.push('🎯 ESTRATEGIA BOLA DE NIEVE: Enfócate en pagar primero "' + smallest.name + '" (restan ' + formatMoney(smallestRemaining) + '). Al liquidarla, liberas ' + formatMoney(smallest.monthlyPayment || smallestRemaining) + ' mensuales para atacar la siguiente. ¡Así ganas momentum!');
+  }
+
+  // 5. Savings advice
+  if (totalSavings === 0 && monthlyIncome > 0) {
+    advices.push('🏦 AHORRO: No tienes ahorros registrados. Empieza con el 10% de cada ingreso quincenal. Si ganas ' + formatMoney(monthlyIncome) + ' quincenal, ahorra ' + formatMoney(monthlyIncome * 0.1) + ' por quincena. ¡Pequeñas cantidades suman!');
+  } else if (totalSavings > 0 && totalSavings < monthlyIncome) {
+    advices.push('🏦 AHORRO: Tienes ' + formatMoney(totalSavings) + ' ahorrados. Meta recomendada: 3 meses de gastos (' + formatMoney(monthlyData.total * 3) + '). Te faltan ' + formatMoney(monthlyData.total * 3 - totalSavings) + '. Sigue así.');
+  } else if (totalSavings >= monthlyIncome * 3) {
+    advices.push('🏦 ¡EXCELENTE! Tienes un fondo de emergencia sólido (' + formatMoney(totalSavings) + '). Ahora puedes destinar excedentes a inversiones o acelerar el pago de deudas.');
+  }
+
+  // 6. Biweekly income specific advice
+  const biweeklyIncomes = data.incomes.filter(i => i.freq === 'biweekly');
+  if (biweeklyIncomes.length > 0 && monthlyData.details.length > 0) {
+    const qAmount = biweeklyIncomes.reduce((s, i) => s + i.amount, 0);
+    const nextPayment = monthlyData.details.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+    if (nextPayment) {
+      const daysUntil = Math.ceil((new Date(nextPayment.date) - new Date()) / (1000 * 60 * 60 * 24));
+      if (daysUntil > 0 && daysUntil <= 15) {
+        advices.push('📅 PRÓXIMA QUINCENA: Tu próximo pago es "' + nextPayment.name + '" (' + formatMoney(nextPayment.amount) + ') en ' + daysUntil + ' días. Con tus ingresos quincenales de ' + formatMoney(qAmount) + ', asegúrate de reservar el pago desde tu próximo depósito.');
+      }
+    }
+  }
+
+  // 7. Debt-free celebration
+  if (activeDebts.length === 0 && data.debts.length > 0) {
+    advices.push('🎉 ¡LIBRE DE DEUDAS! Todas tus deudas están pagadas. Ahora destina el ' + formatMoney(monthlyData.total) + ' que pagabas en deudas directamente a inversiones o ahorro. ¡Tu yo del futuro te lo agradecerá!');
+  }
+
+  // 8. General tips
+  if (advices.length === 0 || advices.length < 3) {
+    advices.push('💡 CONSEJO: La regla 50/30/20 sugiere: 50% necesidades (deudas), 30% gustos, 20% ahorro. Si tus deudas superan el 50% de tus ingresos, es hora de ajustar.');
+    advices.push('💡 CONSEJO: Si tienes deudas con intereses diferentes, considera el método AVALANCHA: paga primero la deuda con mayor tasa de interés para pagar menos en total.');
+    advices.push('💡 CONSEJO: Automatiza tus ahorros. Cada quincena transfiere automáticamente el 10% a una cuenta separada. Lo que no ves, no lo gastas.');
+  }
+
+  // Fallback
+  if (advices.length === 0) {
+    advices.push('👋 ¡Bienvenido a FinHogar! Registra tus ingresos y deudas para recibir consejos personalizados de planificación financiera.');
+  }
+
+  // Store advices for rotation
+  window._aiAdvices = advices;
+  window._aiCurrentIndex = 0;
+
+  // Display first advice
+  displayAIAdvice(0);
 }
+
+function displayAIAdvice(index) {
+  if (!window._aiAdvices || window._aiAdvices.length === 0) return;
+  const advice = window._aiAdvices[index % window._aiAdvices.length];
+  document.getElementById('aiText').textContent = advice;
+  document.getElementById('aiText').style.animation = 'none';
+  document.getElementById('aiText').offsetHeight; // trigger reflow
+  document.getElementById('aiText').style.animation = 'fadeIn 0.5s ease';
+}
+
+function nextAIAdvice() {
+  if (!window._aiAdvices || window._aiAdvices.length === 0) return;
+  window._aiCurrentIndex = (window._aiCurrentIndex + 1) % window._aiAdvices.length;
+  displayAIAdvice(window._aiCurrentIndex);
+}
+
+// Auto-rotate advice every 30 seconds
+setInterval(() => {
+  if (window._aiAdvices && window._aiAdvices.length > 1) {
+    nextAIAdvice();
+  }
+}, 6000);
 
 // ========== PWA INSTALL ==========
 let deferredPrompt;
@@ -1354,6 +1499,118 @@ function saveEditDebt(id) {
   updateUI();
 }
 
+
+
+// ========== HELPERS FOR INCOME & DEBT PLANNING ==========
+function getMonthlyIncomeProjection() {
+  // ALL incomes are quincenal (biweekly) — calculate per quincena
+  const now = new Date();
+  let total = 0;
+
+  data.incomes.forEach(inc => {
+    const startDate = new Date(inc.date);
+    if (startDate <= now) {
+      total += inc.amount;
+    }
+  });
+
+  return total || data.incomes.reduce((s, i) => s + i.amount, 0);
+}
+
+function getUpcomingMonthlyPayments() {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  let total = 0;
+  let details = [];
+
+  data.debts.filter(d => !d.fullyPaid).forEach(debt => {
+    const dueDate = new Date(debt.dueDate);
+    const isThisMonth = dueDate.getMonth() === currentMonth && dueDate.getFullYear() === currentYear;
+
+    if (debt.splitMonths > 1) {
+      // Monthly payment for split debts
+      const monthly = debt.monthlyPayment || (debt.amount / debt.splitMonths);
+      total += monthly;
+      details.push({ name: debt.name, amount: monthly, date: debt.dueDate, type: 'monthly' });
+    } else {
+      // Single payment - only count if due this month or overdue
+      if (isThisMonth || dueDate < now) {
+        const remaining = debt.amount - (debt.paid || 0);
+        total += remaining;
+        details.push({ name: debt.name, amount: remaining, date: debt.dueDate, type: 'single' });
+      }
+    }
+  });
+
+  return { total, details };
+}
+
+function getPayoffPlan() {
+  const activeDebts = data.debts.filter(d => !d.fullyPaid);
+  if (activeDebts.length === 0) return null;
+
+  // Sort by interest-implied urgency (smallest first = snowball method)
+  const sorted = [...activeDebts].sort((a, b) => {
+    const remA = a.amount - (a.paid || 0);
+    const remB = b.amount - (b.paid || 0);
+    return remA - remB;
+  });
+
+  const monthlyIncome = getMonthlyIncomeProjection();
+  const monthlyPayments = getUpcomingMonthlyPayments().total;
+  const available = monthlyIncome - monthlyPayments;
+
+  let plan = [];
+  let remainingBudget = available > 0 ? available : 0;
+
+  sorted.forEach((debt, idx) => {
+    const remaining = debt.amount - (debt.paid || 0);
+    const monthly = debt.splitMonths > 1 ? debt.monthlyPayment : remaining;
+
+    plan.push({
+      name: debt.name,
+      remaining,
+      monthly,
+      priority: idx + 1,
+      canPayExtra: idx === 0 && remainingBudget > 0,
+      extraAmount: idx === 0 ? remainingBudget : 0
+    });
+  });
+
+  return { plan, monthlyIncome, monthlyPayments, available };
+}
+
+// ========== SAVINGS ==========
+function addSaving() {
+  const name = document.getElementById('saveName').value.trim();
+  const amount = parseFloat(document.getElementById('saveAmount').value);
+  const date = document.getElementById('saveDate').value;
+  if (!name || !amount || !date) { alert('Completa todos los campos'); return; }
+
+  data.savings.push({
+    id: Date.now().toString(),
+    name, amount, date,
+    createdAt: Date.now()
+  });
+  saveLocal();
+  syncToCloud();
+  closeModal();
+  updateUI();
+}
+
+function deleteSaving(id) {
+  if (!confirm('¿Eliminar este ahorro?')) return;
+  data.savings = data.savings.filter(s => s.id !== id);
+  saveLocal();
+  syncToCloud();
+  updateUI();
+}
+
+function getTotalSavings() {
+  return data.savings.reduce((s, i) => s + i.amount, 0);
+}
+
 // ========== EVENT DELEGATION FOR DYNAMIC BUTTONS ==========
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('[data-action]');
@@ -1381,6 +1638,10 @@ document.addEventListener('click', function(e) {
   else if (action === 'delete-debt') {
     e.stopPropagation();
     deleteDebt(id);
+  }
+  else if (action === 'delete-saving') {
+    e.stopPropagation();
+    deleteSaving(id);
   }
 });
 
