@@ -682,7 +682,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
   </div>
   <div class="card" style="margin-top:20px;">
     <p style="font-size:0.8rem;color:var(--text2);text-align:center;">
-      FinHogar v13.2<br>Datos almacenados localmente y sincronizados vía Firebase
+      FinHogar v13.3<br>Datos almacenados localmente y sincronizados vía Firebase
     </p>
   </div>
 </div>
@@ -1854,18 +1854,17 @@ function installApp() {
   }
 }
 
-// Service Worker mínimo - solo para que Chrome detecte la PWA
-// NO cacheamos nada para evitar problemas de sesión
+// Service Worker MÍNIMO - solo para que Chrome detecte la PWA como instalable
+// NO cachea nada, NO interfiere con localStorage
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+  const swCode = `
     self.addEventListener('install', e => self.skipWaiting());
     self.addEventListener('activate', e => e.waitUntil(clients.claim()));
-    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline', {status: 503}))));
-  `)).then(reg => {
-    console.log('SW registrado');
-  }).catch(err => {
-    console.log('SW no registrado:', err);
-  });
+    self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
+  `;
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
 }
 
 // ========== START ==========
