@@ -473,6 +473,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
 }
 </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -1125,7 +1126,9 @@ function openModal(type) {
       <input type="date" id="incDate" value="${today}">
       <label>Frecuencia</label>
       <select id="incFreq">
+        <option value="weekly">Semanal (cada 6 días)</option>
         <option value="biweekly" selected>Quincenal (cada 15 días)</option>
+        <option value="monthly">Mensual (cada 30 o 31 días)</option>
       </select>
       <label>Tipo</label>
       <select id="incType">
@@ -2037,14 +2040,23 @@ function saveEditDebt(id) {
 
 // ========== HELPERS FOR INCOME & DEBT PLANNING ==========
 function getMonthlyIncomeProjection() {
-  // ALL incomes are quincenal (biweekly) — calculate per quincena
   const now = new Date();
   let total = 0;
 
   data.incomes.forEach(inc => {
     const startDate = new Date(inc.date);
     if (startDate <= now) {
-      total += inc.amount;
+      // Multiplicar según frecuencia para obtener proyección mensual
+      const freq = inc.freq || 'biweekly';
+      if (freq === 'weekly') {
+        total += inc.amount * 5; // 30 días / 6 días = 5 veces al mes
+      } else if (freq === 'biweekly') {
+        total += inc.amount * 2; // 30 días / 15 días = 2 veces al mes
+      } else if (freq === 'monthly') {
+        total += inc.amount; // 1 vez al mes
+      } else {
+        total += inc.amount;
+      }
     }
   });
 
