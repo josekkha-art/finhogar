@@ -475,6 +475,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -533,7 +534,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
     <div class="amount positive" id="balanceAmount">$0.00</div>
     <div style="display:flex;gap:10px;margin-top:12px;">
       <div style="flex:1;">
-        <div style="font-size:0.7rem;color:var(--text2);">Ingresos Quincena</div>
+        <div style="font-size:0.7rem;color:var(--text2);">Ingresos Acumulados</div>
         <div style="font-weight:700;color:var(--accent);" id="totalIncome">$0.00</div>
       </div>
       <div style="flex:1;">
@@ -1099,6 +1100,29 @@ function deleteDebt(id) {
   updateUI();
 }
 
+
+// ========== GASTOS DIARIOS ==========
+function addDailyExpense() {
+  const amountInput = document.getElementById('dailyExpenseAmount');
+  const amount = parseFloat(amountInput.value);
+  if (!amount || amount <= 0) { alert('Introduce un monto válido'); return; }
+
+  data.payments.push({
+    id: Date.now().toString(),
+    debtId: 'daily',
+    debtName: 'Gasto Diario',
+    amount: amount,
+    date: new Date().toISOString().split('T')[0],
+    isDailyExpense: true,
+    createdAt: Date.now()
+  });
+
+  amountInput.value = '';
+  saveLocal();
+  syncToCloud();
+  updateUI();
+}
+
 // ========== SETTINGS ==========
 function saveSettings() {
   data.settings.userName = document.getElementById('userName').value;
@@ -1247,15 +1271,19 @@ function formatMoney(n) {
 }
 
 function updateDashboard() {
-  const monthlyIncome = getMonthlyIncomeProjection();
+  // Ingresos acumulados (suma total de todos los ingresos registrados)
+  const totalIncome = data.incomes.reduce((s, i) => s + i.amount, 0);
+  // Pagos mensuales pendientes (obligaciones de este mes)
   const monthlyData = getUpcomingMonthlyPayments();
+  // Total pagado (deudas + gastos diarios ya realizados)
   const totalPaid = data.payments.reduce((s, p) => s + p.amount, 0);
   const totalSavings = getTotalSavings();
-  const balance = monthlyIncome - monthlyData.total;
+  // Dinero disponible después de pagos mensuales = ingresos acumulados - pagos del mes
+  const balance = totalIncome - monthlyData.total;
 
   document.getElementById('balanceAmount').textContent = formatMoney(balance);
   document.getElementById('balanceAmount').className = 'amount ' + (balance >= 0 ? 'positive' : 'negative');
-  document.getElementById('totalIncome').textContent = formatMoney(monthlyIncome);
+  document.getElementById('totalIncome').textContent = formatMoney(totalIncome);
   document.getElementById('monthlyDebts').textContent = formatMoney(monthlyData.total);
   document.getElementById('totalPaid').textContent = formatMoney(totalPaid);
   document.getElementById('savingsAmount').textContent = formatMoney(totalSavings);
