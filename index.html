@@ -1084,6 +1084,8 @@ function payDebt(id) {
     createdAt: Date.now()
   });
 
+  consumeIncomes(payAmount);
+
   if (debt.paid >= debt.amount) {
     debt.fullyPaid = true;
   }
@@ -1102,6 +1104,22 @@ function deleteDebt(id) {
 }
 
 
+// ========== CONSUME INCOMES (FIFO) ==========
+function consumeIncomes(amount) {
+  let remaining = amount;
+  data.incomes.sort((a, b) => new Date(a.date) - new Date(b.date));
+  while (remaining > 0 && data.incomes.length > 0) {
+    const inc = data.incomes[0];
+    inc.amount -= remaining;
+    if (inc.amount <= 0.001) {
+      remaining = Math.abs(inc.amount);
+      data.incomes.shift();
+    } else {
+      remaining = 0;
+    }
+  }
+}
+
 // ========== GASTOS DIARIOS ==========
 function addDailyExpense() {
   const amountInput = document.getElementById('dailyExpenseAmount');
@@ -1118,6 +1136,7 @@ function addDailyExpense() {
     createdAt: Date.now()
   });
 
+  consumeIncomes(amount);
   amountInput.value = '';
   saveLocal();
   syncToCloud();
