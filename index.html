@@ -474,6 +474,7 @@ label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 
 </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -762,10 +763,31 @@ let data = {
 function recoverSession() {
   const room = localStorage.getItem('finhogar_room');
   if (room) {
-    data.roomCode = room;
     const saved = localStorage.getItem('finhogar_data');
     if (saved) {
-      try { data = JSON.parse(saved); } catch(e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        // 🆕 Verificar que los datos guardados correspondan al código guardado
+        if (parsed.roomCode && parsed.roomCode !== room) {
+          // Inconsistencia detectada: limpiar datos
+          data = {
+            incomes: [],
+            debts: [],
+            payments: [],
+            savings: [],
+            settings: { userName: '', partnerName: '', alerts: true, sync: true, savingsGoal: 0 },
+            roomCode: room
+          };
+          saveLocal();
+          alert('⚠️ Se detectó inconsistencia de datos. Se ha limpiado la sesión para el código: ' + room);
+        } else {
+          data = parsed;
+        }
+      } catch(e) {
+        data.roomCode = room;
+      }
+    } else {
+      data.roomCode = room;
     }
     showApp();
     initFirebase();
@@ -823,7 +845,17 @@ function init() {
 function joinRoom() {
   const code = document.getElementById('roomCode').value.trim().toUpperCase();
   if (!code) { alert('Introduce un código'); return; }
-  data.roomCode = code;
+
+  // 🆕 LIMPIAR DATOS AL CAMBIAR DE CÓDIGO (evita mezclar cuentas)
+  data = {
+    incomes: [],
+    debts: [],
+    payments: [],
+    savings: [],
+    settings: { userName: '', partnerName: '', alerts: true, sync: true, savingsGoal: 0 },
+    roomCode: code
+  };
+
   localStorage.setItem('finhogar_room', code);
   saveLocal();
   showApp();
@@ -842,7 +874,12 @@ function showApp() {
 
 function initFirebase() {
   try {
-    app = firebase.initializeApp(firebaseConfig);
+    // 🆕 Proteger contra doble inicialización de Firebase
+    if (!firebase.apps.length) {
+      app = firebase.initializeApp(firebaseConfig);
+    } else {
+      app = firebase.app();
+    }
     db = firebase.database();
     const code = data.roomCode.replace(/[^a-zA-Z0-9]/g, '');
     roomRef = db.ref('rooms/' + code);
@@ -860,6 +897,14 @@ function initFirebase() {
         saveLocal();
         updateUI();
       } else {
+        // 🆕 Sala nueva: limpiar datos locales para no mostrar datos de otra cuenta
+        data.incomes = [];
+        data.debts = [];
+        data.payments = [];
+        data.savings = [];
+        data.settings = { userName: '', partnerName: '', alerts: true, sync: true, savingsGoal: 0 };
+        saveLocal();
+        updateUI();
         syncToCloud();
       }
     }, (err) => {
