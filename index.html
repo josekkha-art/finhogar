@@ -1284,7 +1284,8 @@ function updateDashboard() {
 
   document.getElementById('balanceAmount').textContent = formatMoney(balance);
   document.getElementById('balanceAmount').className = 'amount ' + (balance >= 0 ? 'positive' : 'negative');
-  document.getElementById('totalIncome').textContent = formatMoney(totalIncome);
+  const netIncome = totalIncome - totalPaid;
+  document.getElementById('totalIncome').textContent = formatMoney(netIncome);
   document.getElementById('monthlyDebts').textContent = formatMoney(monthlyData.total);
   document.getElementById('totalPaid').textContent = formatMoney(totalPaid);
   document.getElementById('savingsAmount').textContent = formatMoney(totalSavings);
